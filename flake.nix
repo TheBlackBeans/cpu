@@ -14,9 +14,7 @@
         devShell = with pkgs; mkShell {
           packages = [
             svls
-            verilator
             verilog
-            svlint
           ];
         };
       });
