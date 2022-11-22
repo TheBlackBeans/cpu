@@ -1,6 +1,7 @@
+SOURCES := $(wildcard src/*.sv)
 all:
 
-COMPILER?=iverilog
+COMPILER ?= iverilog
 
 all: out/cpu
 .PHONY: all
@@ -16,6 +17,10 @@ clean:
 	@echo "Removing out/*"
 	@$(RM) out/*
 .PHONY: clean
+
+check:
+	@- $(foreach file,$(SOURCES),svlint $(file))
+.PHONY: check
 
 out:
 	@mkdir out
