@@ -13,6 +13,7 @@
       in {
         devShell = with pkgs; mkShell {
           packages = [
+            svlint
             svls
             verilog
           ];
