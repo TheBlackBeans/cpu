@@ -1,0 +1,14 @@
+[rules]
+case_default = true
+default_nettype_none = true
+explicit_case_default = true
+function_same_as_system_function = true
+genvar_declaration_in_loop = true
+input_with_var = true
+interface_port_with_modport = true
+loop_variable_declaration = true
+non_ansi_module = true
+parameter_explicit_type = true
+uppercamelcase_interface = true
+uppercamelcase_module = true
+uppercamelcase_package = true
