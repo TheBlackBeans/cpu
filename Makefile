@@ -1,8 +1,8 @@
-SOURCES := $(wildcard src/*.sv)
 all:
 
 COMPILER ?= iverilog
 
+# Meta targets
 all: out/cpu
 .PHONY: all
 
@@ -18,13 +18,29 @@ clean:
 	@$(RM) out/*
 .PHONY: clean
 
-check:
-	@- $(foreach file,$(SOURCES),svlint $(file))
-.PHONY: check
-
+# Directories
 out:
 	@mkdir out
 
-out/cpu: src/main.sv | out
+# CPU-relevant stuff
+CPU_SOURCES = \
+	src/ip.sv \
+	src/pg_adder.sv \
+	src/reg.sv \
+	src/main.sv # Last one
+
+out/cpu: $(CPU_SOURCES) | out
 	@echo "Compiling the CPU"
 	@$(COMPILER) -o $@ $^
+
+lint:
+	@echo "Calling svlint (if it exists)"
+	@if which svlint >/dev/null 2>&1; then $(foreach file,$(CPU_SOURCES),svlint $(file);) fi
+	@echo "Checking test decriptions"
+	@cd tests; for f in *; do [[ -f "$$f/description.txt" ]] && ./read_description.sh --lint "$$f" || true; done
+.PHONY: lint
+
+check: lint
+	@echo "Running tests"
+	@tests/run_tests.sh
+.PHONY: check
