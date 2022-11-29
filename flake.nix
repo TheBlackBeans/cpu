@@ -16,6 +16,8 @@
             svlint
             svls
             verilog
+            fontconfig
+            lmodern
           ];
         };
       });

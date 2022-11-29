@@ -1,9 +1,8 @@
 SOURCES := $(wildcard src/*.sv)
-all:
-
+LATEX := lualatex
 COMPILER ?= iverilog
 
-all: out/cpu
+all: out/cpu out/instructionset.pdf
 .PHONY: all
 
 build: out/cpu
@@ -22,8 +21,14 @@ check:
 	@- $(foreach file,$(SOURCES),svlint $(file))
 .PHONY: check
 
+doc: out/instructionset.pdf
+.PHONY: all
+
 out:
 	@mkdir out
+
+out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
+	$(LATEX) -output-directory=out $<
 
 out/cpu: src/main.sv | out
 	@echo "Compiling the CPU"

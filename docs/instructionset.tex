@@ -1,0 +1,170 @@
+\documentclass{scrartcl}
+\usepackage{cmap}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{booktabs, array}
+
+\DeclareMathOperator{\op}{op}
+\DeclareMathOperator{\instr}{instr}
+
+\begin{document}
+\section*{High level description}
+\subsection*{Registers}
+There are 16 registers, \(r_0,\ldots,r_{15}\). Each is a general purpose 16 bit
+register.
+\subsection*{Immediates}
+All immediates are 16 bit signed integers.
+
+\section*{Instructions}
+\subsection*{Instruction description}
+An instruction \verb|instr| takes 32 bits. An instruction has (up to) four
+components. The first eight bits are always the operation performed. If the
+operation takes at least one argument, it is encoded on the next four bits.\par
+An instruction cannot have two immediate arguments.
+\begin{table}[h]
+  \caption{Layout of instructions}
+  \begin{minipage}{0.5\textwidth}
+    \begin{tabular}{lcc}
+      \toprule
+      \textbf{Bits used} & \textbf{value} & \textbf{size}\\
+      \midrule
+      \multicolumn{3}{c}{\(\op()\)}\\
+      \(\instr[1:0]\) & \(arity\) & 2 bits\\
+      \(\instr[5:2]\) & \(\op\) & 4 bits\\
+      \midrule
+      \multicolumn{3}{c}{\(r_d = \op()\)}\\
+      \(\instr[1:0]\) & \(arity\) & 2 bits\\
+      \(\instr[5:2]\) & \(\op\) & 4 bits\\
+      \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+      \midrule
+      \multicolumn{3}{c}{\(r_d = \op(r_1)\)}\\
+      \(\instr[1:0]\) & \(arity\) & 2 bits\\
+      \(\instr[5:2]\) & \(\op\) & 4 bits\\
+      \(\instr[6:6]\) & \(1\) & 1 bit\\
+      \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+      \(\instr[15:12]\) & \(r_1\) & 4 bits\\
+      \midrule
+      \multicolumn{3}{c}{\(r_d = \op(i)\)}\\
+      \(\instr[1:0]\) & \(arity\) & 2 bits\\
+      \(\instr[5:2]\) & \(\op\) & 4 bits\\
+      \(\instr[6:6]\) & \(0\) & 1 bit\\
+      \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+      \(\instr[27:12]\) & \(i\) & 16 bits\\
+      \bottomrule
+    \end{tabular}
+  \end{minipage}
+  \begin{minipage}{0.5\textwidth}
+    \begin{tabular}{lcc}
+      \toprule
+      \textbf{Bits used} & \textbf{value} & \textbf{size}\\
+      \midrule
+      \multicolumn{3}{c}{\(r_d = \op(r_1, r_2)\)}\\
+      \(\instr[1:0]\) & \(arity\) & 2 bits\\
+      \(\instr[5:2]\) & \(\op\) & 4 bits\\
+      \(\instr[7:6]\) & \(11\) & 2 bits\\
+      \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+      \(\instr[15:12]\) & \(r_1\) & 4 bits\\
+      \(\instr[19:16]\) & \(r_2\) & 4 bits\\
+      \midrule
+      \multicolumn{3}{c}{\(r_d = \op(i, r_2)\)}\\
+      \(\instr[1:0]\) & \(arity\) & 2 bits\\
+      \(\instr[5:2]\) & \(\op\) & 4 bits\\
+      \(\instr[7:6]\) & \(01\) & 2 bits\\
+      \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+      \(\instr[27:12]\) & \(i\) & 16 bits\\
+      \(\instr[31:28]\) & \(r_2\) & 4 bits\\
+      \midrule
+      \multicolumn{3}{c}{\(r_d = \op(r_1, i)\)}\\
+      \(\instr[1:0]\) & \(arity\) & 2 bits\\
+      \(\instr[5:2]\) & \(\op\) & 4 bits\\
+      \(\instr[7:6]\) & \(10\) & 2 bits\\
+      \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+      \(\instr[15:12]\) & \(r_1\) & 4 bits\\
+      \(\instr[31:16]\) & \(i\) & 16 bits\\
+      \bottomrule
+    \end{tabular}
+  \end{minipage}
+\end{table}
+\subsection*{Instruction list}
+\begin{table}
+  \center
+  \caption{Operation list}
+  \begin{tabular}{lcrlr}
+    \toprule
+    \textbf{Name} & \textbf{Arity} & \textbf{Encoding} & \textbf{Effect} & \textbf{Notes}\\
+    \midrule
+    add & 2 & \(0000\) & \(r_d=a_1+a_2\)\\
+    sub & 2 & \(0001\) & \(r_d=a_1-a_2\)\\
+    mul & 2 & \(0010\) & \(r_d=a_1\cdot a_2\)\\
+    div & 2 & \(0011\) & \(r_d=a_1/a_2\)\\
+    mod & 2 & \(0100\) & \(r_d=a_1\% a_2\)\\
+    and & 2 & \(0101\) & \(r_d=a_1 \& a_2\)\\
+    or & 2 & \(0110\) & \(r_d=a_1 | a_2\)\\
+    xor & 2 & \(0111\) & \(r_d=a_1\bigoplus a_2\)\\
+    jmp & 1 & \(0001\) & \(ip=a_1\) & \(r_d\) is ignored\\
+    jo & 1 & \(0010\) & \(ip=ip+a_1\) & \(r_d\) is ignored\\
+    jz & 2 & \(1000\) & if \(a_1=0\), \(ip=a_2\)\\
+    cmp\textit{cc} & 2 & \(1001\) & if \(a_1\;cc\;a_2\), \(r_d=1\), otherwise \(r_d=0\)\\
+    load & 1 & \(0011\) & \(r_d=\mathrm{RAM}[a_1]\)\\
+    store & 2 & \(1010\) & \(\mathrm{RAM}[a_1]=a_2\) & \(r_d\) is ignored\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+% \subsubsection*{Instruction without arguments}
+% \begin{description}
+% \item[\verb+instr[7:0]+] The first component encodes the operation performed, on
+%   $8$ bits.
+% \end{description}
+% \subsubsection*{Instruction with a destination}
+% \begin{description}
+% \item[\verb|instr[7:0]|] The first component encodes the operation performed, on
+%   $8$ bits.
+% \item[\verb|instr[11:8]|] The second component encodes the destination register,
+%   on $4$ bits.
+% \end{description}
+% \subsubsection*{Instruction with a destination, and a register argument}
+% \begin{description}
+% \item[\verb|instr[7:0]|] The first component encodes the operation performed, on
+%   $8$ bits.
+% \item[\verb|instr[11:8]|] The second component encodes the destination register,
+%   on $4$ bits.
+% \item[\verb|instr[15:12]|] The third component encodes the first argument register,
+%   on $4$ bits.
+% \end{description}
+% \subsubsection*{Instruction with a destination, and two register arguments}
+% \begin{description}
+% \item[\verb|instr[7:0]|] The first component encodes the operation performed, on
+%   $8$ bits.
+% \item[\verb|instr[11:8]|] The second component encodes the destination register,
+%   on $4$ bits.
+% \item[\verb|instr[15:12]|] The third component encodes the first argument register,
+%   on $4$ bits.
+% \item[\verb|instr[19:16]|] The forth component encodes the second argument register,
+%   on $4$ bits.
+% \end{description}
+% \subsubsection*{Instruction with a destination, an immediate argument then a register argument}
+% \begin{description}
+% \item[\verb|instr[7:0]|] The first component encodes the operation performed, on
+%   $8$ bits.
+% \item[\verb|instr[11:8]|] The second component encodes the destination register,
+%   on $4$ bits.
+% \item[\verb|instr[27:12]|] The third component encodes the immediate argument,
+%   on $16$ bits.
+% \item[\verb|instr[31:28]|] The forth component encodes the second argument register,
+%   on $4$ bits.
+% \end{description}
+% \subsubsection*{Instruction with a destination, a register argument then an immediate argument}
+% \begin{description}
+% \item[\verb|instr[7:0]|] The first component encodes the operation performed, on
+%   $8$ bits.
+% \item[\verb|instr[11:8]|] The second component encodes the destination register,
+%   on $4$ bits.
+% \item[\verb|instr[15:12]|] The third component encodes the second argument register,
+%   on $4$ bits.
+% \item[\verb|instr[31:16]|] The forth component encodes the immediate argument,
+%   on $16$ bits.
+% \end{description}
+
+\end{document}
