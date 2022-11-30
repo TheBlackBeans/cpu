@@ -47,11 +47,13 @@
 \begin{document}
 \maketitle{}
 \section*{Hardware requirements}
-This instruction set requires 16 registers, \(r_0,\ldots,r_{15}\). Each is a
-general purpose 16 bit register, which can be accessed both for writing and for
-reading, even in a single cycle, in which case the data read is the one stored
-in the register \textit{before} the write operation. Every register must initially
-be initialized to zeros.
+This instruction set requires 16 registers, \(r_0,\ldots,r_{15}\).\par
+The first register always contains zeros. It can be used as any other register.\par
+All the other registers are general purpose 16 bit register, which can be
+accessed both for writing and for reading, even in a single cycle, in which case
+the data read is the one stored in the register \textit{before} the write
+operation. Every register must initially be initialized to zeros, as should the
+RAM.
 
 \section*{Instructions}
 An instruction \verb|instr| takes 32 bits. The first eight bits encode the
@@ -65,7 +67,7 @@ the operation must be stored, unless told otherwise.\par
 The next five bits encode to the operation. The first two bits indicate the
 operation family:
 \begin{itemize}
-\item $00$: Arithmetic operation.
+\item $00$: Arithmetic and logic operation.
 \item $01$: Jump operation.
 \item $10$: RAM operation
 \item $11$: Comparison operation.
@@ -73,7 +75,7 @@ operation family:
 The next three bits specify the actual operation performed.\par
 The two final bits of the instruction code indicate whether arguments are
 registers or immediates, $1$ meaning register and $0$ immediate. The first of
-these two bits corresponds $a_1$, whereas the second to $a_2$.
+these two bits corresponds to $a_1$, whereas the second to $a_2$.
 \subsection*{Arguments}
 Arguments are of two kind: immediates and registers. Registers require four bits,
 whereas immediates are 16 bits signed integers. At most one immediate can be
@@ -93,8 +95,6 @@ In these three bits, the last two are used to distinguish between \(=\), \(<\)
 and \(>\), whilst the first bit is used to negate the output. This allows only
 implementing three actual comparisons, and \verb|xor| the result with the first
 bit.
-\subsection*{Jump operations}
-Jump operations are already one-shot encoded, no further decoding is needed.
 \begin{figure}[b]
   \label{fig:instrs}
   \begin{scalepicture}{\textwidth}
@@ -124,7 +124,7 @@ Jump operations are already one-shot encoded, no further decoding is needed.
         \node at (\n.5,1.5) {$\n$};
       }
       \foreach \n in {0,1,6,8,12,16}{
-        \draw[dotted] (\n,2) -- (\n,-1);
+        \draw[dotted] (\n,0) -- (\n,-1);
       }
       \node at (3.5,-.5) {operation};
       \node at (10,-.5) {$r_d$};
@@ -161,7 +161,7 @@ Jump operations are already one-shot encoded, no further decoding is needed.
         \FPeval{\next}{clip(\n+1)}
         \draw (\n,-4) rectangle (\next,-3);
       }
-      \foreach \n in {0,1,6,8,12,16,20}{
+      \foreach \n in {0,1,6,8,12,16,28}{
         \draw[dotted] (\n,-5) -- (\n,-4);
       }
       \node at (3.5,-4.5) {operation};
@@ -171,8 +171,8 @@ Jump operations are already one-shot encoded, no further decoding is needed.
       \node at (6.5,-3.5) {$1$};
       \node at (7.5,-3.5) {$1$};
       \node at (14,-4.5) {$r_1$};
-      \node at (18,-4.5) {$r_2$};
-      \foreach \n in {20,...,31}{
+      \node at (30,-4.5) {$r_2$};
+      \foreach \n in {16,...,27}{
         \node at (\n.5,-3.5) {X};
       }
 
@@ -271,7 +271,7 @@ Jump operations are already one-shot encoded, no further decoding is needed.
     \textbf{Name} & \textbf{Arity} & \textbf{Encoding} & \textbf{Effect}\\
     \midrule
     \midrule
-    \multicolumn{3}{c}{Arithmetic operation}\\
+    \multicolumn{3}{c}{Arithmetic and logic operation}\\
     \midrule
     add & 2 & \(00\;000\) & \(r_d=a_1+a_2\)\\
     sub & 2 & \(00\;001\) & \(r_d=a_1-a_2\)\\
@@ -286,10 +286,10 @@ Jump operations are already one-shot encoded, no further decoding is needed.
     \midrule
     jmp & 1 & \(01\;000\) & \(ip=a_1\)\\
     jo & 1 & \(01\;001\) & \(ip=ip+a_1\)\\
-    jz & 2 & \(01\;010\) & if \(a_1=0\), \(ip=a_2\)\\
-    jzo & 2 & \(01\;011\) & if \(a_1=0\), \(ip=ip+a_2\)\\
-    jnz & 2 & \(01\;101\) & if \(a_1\neq0\), \(ip=a_2\)\\
-    jnzo & 
+    jz & 2 & \(01\;000\) & if \(a_1=0\), \(ip=a_2\)\\
+    jzo & 2 & \(01\;001\) & if \(a_1=0\), \(ip=ip+a_2\)\\
+    jnz & 2 & \(01\;010\) & if \(a_1\neq0\), \(ip=a_2\)\\
+    jnzo & 2 & \(01\;011\) & if \(a_2\neq0\), \(ip=ip+a_2\)\\
     \midrule
     \multicolumn{3}{c}{Comparison operation}\\
     \midrule
@@ -309,11 +309,11 @@ Jump operations are already one-shot encoded, no further decoding is needed.
     \textbf{Name} & \textbf{Encoding}\\
     \midrule
     eq & \(000\)\\
-    neq & \(100\)\\
+    ne & \(100\)\\
     lt & \(001\)\\
-    leq & \(110\)\\
+    le & \(110\)\\
     gt & \(010\)\\
-    geq & \(101\)\\
+    ge & \(101\)\\
     \bottomrule
   \end{tabular}
 
