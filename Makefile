@@ -23,9 +23,8 @@ out:
 	@mkdir out
 
 # CPU-relevant stuff
-CPU_SOURCES = \
+CPU_SOURCES := \
 	src/ip.sv \
-	src/pg_adder.sv \
 	src/reg.sv \
 	src/main.sv # Last one
 
@@ -37,7 +36,7 @@ lint:
 	@echo "Calling svlint (if it exists)"
 	@if which svlint >/dev/null 2>&1; then $(foreach file,$(CPU_SOURCES),svlint $(file);) fi
 	@echo "Checking test decriptions"
-	@cd tests; for f in *; do [[ -f "$$f/description.txt" ]] && ./read_description.sh --lint "$$f" || true; done
+	@cd tests; for f in *; do if [[ -f "$$f/description.txt" ]]; then ./read_description.sh --lint "$$f"; fi; done
 .PHONY: lint
 
 check: lint
