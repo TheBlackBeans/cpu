@@ -6,7 +6,7 @@ use std::{
 use anyhow::Result;
 use crate::ast::{Arg, Expression, InstrOrLabel, Instruction, AST, Statement};
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 struct EncodedInstr([bool; 32]);
 
 impl From<EncodedInstr> for u32 {
@@ -94,11 +94,13 @@ pub fn to_blob(ast: &AST, output: &Path) -> Result<()> {
             Instruction::Statement(statement) => {
 		match statement {
 		    Statement::Monadic { op, a1 } => {
+			encoded_instr[0] = false;
 			op_code = op.code();
 			a_1 = a1;
 			a_2 = None;
 		    },
 		    Statement::Diadic { op, a1, a2 } => {
+			encoded_instr[0] = true;
 			op_code = op.code();
 			a_1 = a1;
 			a_2 = Some(a2);
@@ -129,7 +131,7 @@ pub fn to_blob(ast: &AST, output: &Path) -> Result<()> {
 	}
 
         encoded_instr.set_range(1..6, op_code);
-        code.extend(Into::<u32>::into(encoded_instr).to_be_bytes());
+        code.extend(Into::<u32>::into(encoded_instr).to_le_bytes());
     }
     let mut file = File::create(output)?;
     file.write_all(&code)?;

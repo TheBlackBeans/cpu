@@ -277,8 +277,9 @@ fn read_instr_or_label(ast: BeansAST) -> Result<InstrOrLabel> {
 }
 
 fn read_ast(ast: BeansAST) -> Result<AST> {
+    let mut node = node!(ast);
     Ok(AST {
-        instr_or_label: read_list(read_instr_or_label, ast)?,
+        instr_or_label: read_list(read_instr_or_label, get!(node, "instrlbls"))?,
     })
 }
 

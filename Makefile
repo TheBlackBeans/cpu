@@ -24,6 +24,13 @@ check:
 	@- $(foreach file,$(SOURCES),svlint $(file))
 .PHONY: check
 
+testasj: out/asj
+	@assembler/run-tests
+.PHONY: testasj
+
+tests: testasj
+.PHONY: tests
+
 doc: out/instructionset.pdf
 .PHONY: all
 

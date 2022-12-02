@@ -26,7 +26,7 @@ keyword CMPNEQ ::= cmpne
 keyword CMPLT ::= cmplt
 keyword CMPLEQ ::= cmple
 keyword CMPGT ::= cmpgt
-keyword CMPGEQ ::= gmpge
+keyword CMPGEQ ::= cmpge
 
 keyword LOAD ::= load
 keyword STORE ::= store

@@ -26,12 +26,12 @@ Instruction ::=
 
 "an expression"
 Expression ::=
-  ExprMonOp@op Arg@left <Monadic>
+  ExprMonOp@op Arg@arg <Monadic>
   ExprBinOp@op Arg@left COMMA Arg@right <Diadic>;
 
 "a statement"
 Statement ::=
-  StmtMonOp@op Arg@left <Monadic>
+  StmtMonOp@op Arg@arg <Monadic>
   StmtBinOp@op Arg@left COMMA Arg@right <Diadic>;
 
 "an instruction code"

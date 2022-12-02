@@ -25,16 +25,7 @@ fn main() -> Result<()> {
                 exit(1);
             }
         };
-        let output = match args.output {
-            Some(p) => match p.canonicalize() {
-                Ok(p) => p,
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    exit(1);
-                }
-            },
-            None => path.file_stem().unwrap().into(),
-        };
+        let output = args.output.unwrap_or_else(|| path.file_stem().unwrap().into());
         (path, output)
     };
 
