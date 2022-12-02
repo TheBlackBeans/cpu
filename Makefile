@@ -2,6 +2,7 @@ SOURCES := $(wildcard src/*.sv)
 ASSEMBLER_SOURCES := $(wildcard assembler/*.rs)
 ASSEMBLER_SOURCES += assembler/asj.clx assembler/asj.cgr
 LATEX := lualatex
+LATEX_FLAGS := -interaction=batchmode -output-directory=out
 COMPILER ?= iverilog
 
 all: out/cpu out/instructionset.pdf out/asj
@@ -30,7 +31,7 @@ out:
 	@mkdir out
 
 out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
-	$(LATEX) -output-directory=out $<
+	$(LATEX) $(LATEX_FLAGS) $<
 
 out/%: target/release/%
 	@cp $< $@
