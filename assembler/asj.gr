@@ -1,0 +1,91 @@
+Option[content] ::=
+  content@value <Some>
+  <None>;
+
+NonEmptyList[content, separation] ::=
+  content@head <Nil>
+  content@head separation NonEmptyList[content, separation]@tail <Cons>;
+
+List[content, separation] ::=
+  Option[NonEmptyList[content, separation]]@value <>;
+
+Empty ::= <>;
+
+"a compilation unit"
+@File ::=
+  List[InstructionOrLabel, Empty]@instrlbls <>;
+
+InstructionOrLabel ::=
+  LABEL.0@value COLON <Label>
+  Instruction@instr <Instruction>;
+
+"an instruction"
+Instruction ::=
+  REGISTER.0@dest EQ Expression@value <Assignment>
+  Statement@stmt <Statement>;
+
+"an expression"
+Expression ::=
+  ExprMonOp@op Arg@left <Monadic>
+  ExprBinOp@op Arg@left COMMA Arg@right <Diadic>;
+
+"a statement"
+Statement ::=
+  StmtMonOp@op Arg@left <Monadic>
+  StmtBinOp@op Arg@left COMMA Arg@right <Diadic>;
+
+"an instruction code"
+ExprBinOp ::=
+  ADD <Add>
+  SUB <Sub>
+  MUL <Mul>
+  DIV <Div>
+  MOD <Mod>
+  AND <And>
+  OR <Or>
+  XOR <Xor>
+  CMPEQ <CmpEq>
+  CMPNEQ <CmpNeq>
+  CMPLT <CmpLt>
+  CMPLEQ <CmpLeq>
+  CMPGT <CmpGt>
+  CMPGEQ <CmpGeq>;
+
+"an instruction code"
+ExprMonOp ::=
+  LOAD <Load>;
+
+"an instruction code"
+StmtBinOp ::=
+  JZ <Jz>
+  JZO <Jzo>
+  JNZ <Jnz>
+  JNZO <Jnzo>
+  STORE <Store>;
+
+"an instruction code"
+StmtMonOp ::=
+  JMP <Jmp>
+  JO <Jo>;
+
+"an argument"
+Arg ::=
+  REGISTER.0@value <Register>
+  Calc@value <Immediate>;
+
+"an immediate"
+Calc ::=
+  INT.0@value <Literal>
+  LPAR Calc@this RPAR <Through>
+  (left-assoc) Calc@left MulDiv@op Calc@right <BinOp>
+  (left-assoc) Calc@left AddSub@op Calc@right <BinOp>;
+
+"an operator"
+MulDiv ::=
+  ASTERISK <Mul>
+  SLASH <Div>;
+
+"an operator"
+AddSub ::=
+  PLUS <Add>
+  MINUS <Sub>;

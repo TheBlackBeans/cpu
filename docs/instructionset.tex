@@ -120,20 +120,21 @@ bit.
       
       \foreach \n in {0,...,31}{
         \FPeval{\next}{clip(\n+1)}
+        \FPeval{\lab}{clip(31-\n)}
         \draw (\n,0) rectangle (\next,1);
-        \node at (\n.5,1.5) {$\n$};
+        \node at (\n.5,1.5) {$\lab$};
       }
-      \foreach \n in {0,1,6,8,12,16}{
+      \foreach \n in {16, 20, 24, 26, 31, 32}{
         \draw[dotted] (\n,0) -- (\n,-1);
       }
-      \node at (3.5,-.5) {operation};
-      \node at (10,-.5) {$r_d$};
+      \node at (28.5,-.5) {operation};
+      \node at (22,-.5) {$r_d$};
       
-      \node at (.5,.5) {$0$};
-      \node at (6.5,.5) {$1$};
-      \node at (7.5,.5) {X};
-      \node at (14,-.5) {$r_1$};
-      \foreach \n in {16,...,31}{
+      \node at (31.5,.5) {$0$};
+      \node at (25.5,.5) {$1$};
+      \node at (24.5,.5) {X};
+      \node at (18,-.5) {$r_1$};
+      \foreach \n in {0,...,15}{
         \node at (\n.5,.5) {X};
       }
 
@@ -142,17 +143,18 @@ bit.
         \FPeval{\next}{clip(\n+1)}
         \draw (\n,-2) rectangle (\next,-1);
       }
-      \foreach \n in {0,1,6,8,12,28}{
+      \foreach \n in {32,31,26,24,20,4}{
+      % \foreach \n in {0,1,6,8,12,28}{
         \draw[dotted] (\n,-3) -- (\n,-2);
       }
-      \node at (3.5,-2.5) {operation};
-      \node at (10,-2.5) {$r_d$};
-      \node at (.5,-1.5) {$0$};
+      \node at (28.5,-2.5) {operation};
+      \node at (22,-2.5) {$r_d$};
+      \node at (31.5,-1.5) {$0$};
       
-      \node at (6.5,-1.5) {$0$};
-      \node at (7.5,-1.5) {X};
-      \node at (20,-2.5) {$i$};
-      \foreach \n in {28,...,31}{
+      \node at (25.5,-1.5) {$0$};
+      \node at (24.5,-1.5) {X};
+      \node at (12,-2.5) {$i$};
+      \foreach \n in {0,...,3}{
         \node at (\n.5,-1.5) {X};
       }
 
@@ -161,18 +163,18 @@ bit.
         \FPeval{\next}{clip(\n+1)}
         \draw (\n,-4) rectangle (\next,-3);
       }
-      \foreach \n in {0,1,6,8,12,16,28}{
+      \foreach \n in {32,31,26,24,20,16,4}{
         \draw[dotted] (\n,-5) -- (\n,-4);
       }
-      \node at (3.5,-4.5) {operation};
-      \node at (10,-4.5) {$r_d$};
-      \node at (.5,-3.5) {$1$};
+      \node at (28.5,-4.5) {operation};
+      \node at (22,-4.5) {$r_d$};
+      \node at (31.5,-3.5) {$1$};
       
-      \node at (6.5,-3.5) {$1$};
-      \node at (7.5,-3.5) {$1$};
-      \node at (14,-4.5) {$r_1$};
-      \node at (30,-4.5) {$r_2$};
-      \foreach \n in {16,...,27}{
+      \node at (25.5,-3.5) {$1$};
+      \node at (24.5,-3.5) {$1$};
+      \node at (18,-4.5) {$r_1$};
+      \node at (2,-4.5) {$r_2$};
+      \foreach \n in {4,...,15}{
         \node at (\n.5,-3.5) {X};
       }
 
@@ -181,34 +183,34 @@ bit.
         \FPeval{\next}{clip(\n+1)}
         \draw (\n,-6) rectangle (\next,-5);
       }
-      \foreach \n in {0,1,6,8,12,16,32}{
+      \foreach \n in {32,31,26,24,20,16,0}{
         \draw[dotted] (\n,-7) -- (\n,-6);
       }
-      \node at (3.5,-6.5) {operation};
-      \node at (10,-6.5) {$r_d$};
-      \node at (.5,-5.5) {$1$};
+      \node at (28.5,-6.5) {operation};
+      \node at (22,-6.5) {$r_d$};
+      \node at (31.5,-5.5) {$1$};
       
-      \node at (6.5,-5.5) {$1$};
-      \node at (7.5,-5.5) {$0$};
-      \node at (14,-6.5) {$r_1$};
-      \node at (24,-6.5) {$i$};
+      \node at (25.5,-5.5) {$1$};
+      \node at (24.5,-5.5) {$0$};
+      \node at (18,-6.5) {$r_1$};
+      \node at (8,-6.5) {$i$};
 
       %% 1, 01
       \foreach \n in {0,...,31}{
         \FPeval{\next}{clip(\n+1)}
         \draw (\n,-8) rectangle (\next,-7);
       }
-      \foreach \n in {0,1,6,8,12,28,32}{
+      \foreach \n in {32,31,26,24,20,4,0}{
         \draw[dotted] (\n,-9) -- (\n,-8);
       }
-      \node at (3.5,-8.5) {operation};
-      \node at (10,-8.5) {$r_d$};
-      \node at (.5,-7.5) {$1$};
+      \node at (28.5,-8.5) {operation};
+      \node at (22,-8.5) {$r_d$};
+      \node at (31.5,-7.5) {$1$};
       
-      \node at (6.5,-7.5) {$0$};
-      \node at (7.5,-7.5) {$1$};
-      \node at (20,-8.5) {$i$};
-      \node at (30,-8.5) {$r_2$};
+      \node at (25.5,-7.5) {$0$};
+      \node at (24.5,-7.5) {$1$};
+      \node at (12,-8.5) {$i$};
+      \node at (2,-8.5) {$r_2$};
     \end{tikzpicture}
   \end{scalepicture}
   \caption{Layout of instructions}

@@ -1,8 +1,10 @@
 SOURCES := $(wildcard src/*.sv)
+ASSEMBLER_SOURCES := $(wildcard assembler/*.rs)
+ASSEMBLER_SOURCES += assembler/asj.clx assembler/asj.cgr
 LATEX := lualatex
 COMPILER ?= iverilog
 
-all: out/cpu out/instructionset.pdf
+all: out/cpu out/instructionset.pdf out/asj
 .PHONY: all
 
 build: out/cpu
@@ -29,6 +31,23 @@ out:
 
 out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
 	$(LATEX) -output-directory=out $<
+
+out/%: target/release/%
+	@cp $< $@
+
+out/%-debug: target/debug/%s
+
+target/release/asj: $(ASSEMBLER_SOURCES)
+	cargo build --release
+
+target/debug/asj: $(ASSEMBLER_SOURCES)
+	cargo build
+
+assembler/%.clx: assembler/%.lx
+	beans compile lexer $<
+
+assembler/%.cgr: assembler/%.gr assembler/%.clx
+	beans compile parser --lexer $(word  2,$^) $<
 
 out/cpu: src/main.sv | out
 	@echo "Compiling the CPU"
