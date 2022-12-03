@@ -41,4 +41,7 @@ INT ::= ([-+]?\d+)
 COMMA ::= ,
 
 LABEL ::= ([_a-zA-Z][_a-zA-Z0-9]*)
+LOCAL ::= (\d)
+FORWARD ::= (\d)f
+BACKWARD ::= (\d)b
 COLON ::= :

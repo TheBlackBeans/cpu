@@ -15,8 +15,13 @@ Empty ::= <>;
 @File ::=
   List[InstructionOrLabel, Empty]@instrlbls <>;
 
+"a label"
+Label ::=
+  LABEL.0@value <Global>
+  LOCAL.0@value <Local>;
+
 InstructionOrLabel ::=
-  LABEL.0@value COLON <Label>
+  Label@label COLON <Label>
   Instruction@instr <Instruction>;
 
 "an instruction"
@@ -31,7 +36,8 @@ Expression ::=
 
 "a statement"
 Statement ::=
-  StmtMonOp@op Arg@arg <Monadic>
+  StmtMonJmp@op JmpArg@arg <MonadicJump>
+  StmtBinJmp@op JmpArg@left COMMA JmpArg@right <DiadicJump>
   StmtBinOp@op Arg@left COMMA Arg@right <Diadic>;
 
 "an instruction code"
@@ -57,14 +63,17 @@ ExprMonOp ::=
 
 "an instruction code"
 StmtBinOp ::=
-  JZ <Jz>
-  JZO <Jzo>
-  JNZ <Jnz>
-  JNZO <Jnzo>
   STORE <Store>;
 
 "an instruction code"
-StmtMonOp ::=
+StmtBinJmp ::=
+  JZ <Jz>
+  JZO <Jzo>
+  JNZ <Jnz>
+  JNZO <Jnzo>;
+
+"an instruction code"
+StmtMonJmp ::=
   JMP <Jmp>
   JO <Jo>;
 
@@ -72,6 +81,12 @@ StmtMonOp ::=
 Arg ::=
   REGISTER.0@value <Register>
   Calc@value <Immediate>;
+
+JmpArg ::=
+  Arg@arg <Arg>
+  LABEL.0@value <Global>
+  FORWARD.0@value <Forward>
+  BACKWARD.0@value <Backward>;
 
 "an immediate"
 Calc ::=

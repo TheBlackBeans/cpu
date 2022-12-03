@@ -1,0 +1,24 @@
+0:
+	jmp 0b
+	jmp 0f
+0:
+	jmp 0b
+1:
+2:
+	jmp 0b
+	jmp 1b
+lab:
+	jmp 3f
+	jmp lab
+	jmp 2f
+3:
+	jmp 1b
+2:
+	jmp 1f
+2:
+	jmp 2b
+1:
+	jmp 3b
+	jmp 1f
+1:
+	jmp 1b

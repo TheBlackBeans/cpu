@@ -7,17 +7,17 @@ echo -n "Running asj tests: "
 for f in assembler/tests/*.asj; do
     out/asj -o result $f
     if cmp --quiet \
-	   <(python assembler/printer.py result | sed -E 's/[0-9]+ \| ([01]+)/\1/')\
+	   <(python assembler/printer.py result  2>/dev/null | sed -E 's/[0-9]+ \| ([01]+)/\1/')\
 	   assembler/tests/`basename $f .asj`.out; then
 	echo -n .
     else
 	echo -n X
-	echecs+=("Echec sur '$(basename $f .asj)'")
+	echecs+=("Echec sur '$(basename $f .asj)'.")
     fi
     rm -f result
 done
 echo
 
-for msg in $echecs[@]; do
+for msg in "$echecs[@]"; do
     echo $msg
 done

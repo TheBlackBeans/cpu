@@ -1,7 +1,25 @@
 use std::rc::Rc;
 
 type Register = u8;
-type Label = Rc<str>;
+
+#[derive(Debug)]
+pub enum LabelImmediate {
+    Global(Rc<str>),
+    Forward(u8),
+    Backward(u8),
+}
+
+#[derive(Debug)]
+pub enum Immediate {
+    Immediate(i16),
+    Label(LabelImmediate),
+}
+
+#[derive(Hash, PartialEq, Eq)]
+pub enum Label {
+    Global(Rc<str>),
+    Local(u8),
+}
 
 pub struct AST {
     pub instr_or_label: Vec<InstrOrLabel>,
@@ -29,7 +47,7 @@ pub enum Statement {
 
 pub enum Arg {
     Register(Register),
-    Immediate(i16),
+    Immediate(Immediate),
 }
 
 pub enum ExprBinOp {
@@ -101,7 +119,6 @@ impl StmtBinOp {
         }
     }
 }
-
 pub enum StmtMonOp {
     Jmp,
     Jo,

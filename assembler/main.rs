@@ -1,5 +1,5 @@
-use clap::Parser;
 use anyhow::Result;
+use clap::Parser;
 use compile::to_blob;
 use parsing::parse_to_ast;
 use std::{path::PathBuf, process::exit};
@@ -25,7 +25,9 @@ fn main() -> Result<()> {
                 exit(1);
             }
         };
-        let output = args.output.unwrap_or_else(|| path.file_stem().unwrap().into());
+        let output = args
+            .output
+            .unwrap_or_else(|| path.file_stem().unwrap().into());
         (path, output)
     };
 

@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arg, ExprBinOp, ExprMonOp, Expression, InstrOrLabel, Instruction,
-    Statement, StmtBinOp, StmtMonOp,
+    Arg, ExprBinOp, ExprMonOp, Expression, Immediate, InstrOrLabel,
+    Instruction, LabelImmediate, Statement, StmtBinOp, StmtMonOp, Label,
 };
 use anyhow::Result;
 use beans::{
@@ -99,7 +99,7 @@ fn read_nonempty_list<T>(
     let mut result = Vec::new();
     loop {
         let mut node = node!(ast);
-	result.push(f(get!(node, "head"))?);
+        result.push(f(get!(node, "head"))?);
         match_variant! {(node) {
             "Cons" => ast = get!(node, "tail"),
             "Nil" => break,
@@ -108,7 +108,10 @@ fn read_nonempty_list<T>(
     Ok(result)
 }
 
-fn read_option<T>(f: impl Fn(BeansAST) -> Result<T>, ast: BeansAST) -> Result<Option<T>> {
+fn read_option<T>(
+    f: impl Fn(BeansAST) -> Result<T>,
+    ast: BeansAST,
+) -> Result<Option<T>> {
     let mut node = node!(ast);
     Ok(match_variant! {(node) {
     "None" => None,
@@ -116,10 +119,15 @@ fn read_option<T>(f: impl Fn(BeansAST) -> Result<T>, ast: BeansAST) -> Result<Op
     }})
 }
 
-fn read_list<T>(f: impl Fn(BeansAST) -> Result<T>, ast: BeansAST) -> Result<Vec<T>> {
+fn read_list<T>(
+    f: impl Fn(BeansAST) -> Result<T>,
+    ast: BeansAST,
+) -> Result<Vec<T>> {
     let mut node = node!(ast);
-    Ok(read_option(|ast| read_nonempty_list(&f, ast), get!(node, "value"))?
-        .unwrap_or_default())
+    Ok(
+        read_option(|ast| read_nonempty_list(&f, ast), get!(node, "value"))?
+            .unwrap_or_default(),
+    )
 }
 
 fn read_expr_mon_op(ast: BeansAST) -> ExprMonOp {
@@ -157,6 +165,22 @@ fn read_calc(ast: BeansAST) -> Result<i16> {
     }})
 }
 
+fn read_jmp_arg(ast: BeansAST) -> Result<Arg> {
+    let mut node = node!(ast);
+    Ok(match_variant! {(node) {
+    "Arg" => read_arg(get!(node, "arg"))?,
+	"Global" => Arg::Immediate(
+	    Immediate::Label(LabelImmediate::Global(Rc::<str>::from(value!(node))))
+	),
+	"Forward" => Arg::Immediate(
+	    Immediate::Label(LabelImmediate::Forward(value!(node).parse()?))
+	),
+	"Backward" => Arg::Immediate(
+	    Immediate::Label(LabelImmediate::Backward(value!(node).parse()?))
+	),
+    }})
+}
+
 fn read_arg(ast: BeansAST) -> Result<Arg> {
     let mut node = node!(ast);
     Ok(match_variant! {(node) {
@@ -168,7 +192,7 @@ fn read_arg(ast: BeansAST) -> Result<Arg> {
         }
         Arg::Register(register)
     },
-    "Immediate" => Arg::Immediate(read_calc(get!(node, "value"))?),
+    "Immediate" => Arg::Immediate(Immediate::Immediate(read_calc(get!(node, "value"))?)),
     }})
 }
 
@@ -218,7 +242,7 @@ fn read_expression(ast: BeansAST) -> Result<Expression> {
     }})
 }
 
-fn read_stmt_mon_op(ast: BeansAST) -> StmtMonOp {
+fn read_stmt_mon_jmp(ast: BeansAST) -> StmtMonOp {
     let mut node = node!(ast);
     match_variant! {(node) {
     "Jmp" => StmtMonOp::Jmp,
@@ -226,13 +250,19 @@ fn read_stmt_mon_op(ast: BeansAST) -> StmtMonOp {
     }}
 }
 
-fn read_stmt_bin_op(ast: BeansAST) -> StmtBinOp {
+fn read_stmt_bin_jmp(ast: BeansAST) -> StmtBinOp {
     let mut node = node!(ast);
     match_variant! {(node) {
-    "Jz" => StmtBinOp::Jz,
+        "Jz" => StmtBinOp::Jz,
     "Jzo" => StmtBinOp::Jzo,
     "Jnz" => StmtBinOp::Jnz,
     "Jnzo" => StmtBinOp::Jnzo,
+    }}
+}
+
+fn read_stmt_bin_op(ast: BeansAST) -> StmtBinOp {
+    let mut node = node!(ast);
+    match_variant! {(node) {
     "Store" => StmtBinOp::Store,
     }}
 }
@@ -240,9 +270,14 @@ fn read_stmt_bin_op(ast: BeansAST) -> StmtBinOp {
 fn read_statement(ast: BeansAST) -> Result<Statement> {
     let mut node = node!(ast);
     Ok(match_variant! {(node) {
-    "Monadic" => Statement::Monadic {
-        op: read_stmt_mon_op(get!(node, "op")),
-        a1: read_arg(get!(node, "arg"))?,
+    "MonadicJump" => Statement::Monadic {
+        op: read_stmt_mon_jmp(get!(node, "op")),
+        a1: read_jmp_arg(get!(node, "arg"))?,
+    },
+    "DiadicJump" => Statement::Diadic {
+        op: read_stmt_bin_jmp(get!(node, "op")),
+        a1: read_jmp_arg(get!(node, "left"))?,
+        a2: read_jmp_arg(get!(node, "right"))?,
     },
     "Diadic" => Statement::Diadic {
         op: read_stmt_bin_op(get!(node, "op")),
@@ -268,18 +303,29 @@ fn read_instruction(ast: BeansAST) -> Result<Instruction> {
     }})
 }
 
+fn read_label(ast: BeansAST) -> Result<Label> {
+    let mut node = node!(ast);
+    Ok(match_variant! {(node) {
+	"Global" => Label::Global(Rc::<str>::from(value!(node))),
+	"Local" => Label::Local(value!(node).parse()?),
+    }})
+}
+
 fn read_instr_or_label(ast: BeansAST) -> Result<InstrOrLabel> {
     let mut node = node!(ast);
     Ok(match_variant! {(node) {
     "Instruction" => InstrOrLabel::Instruction(read_instruction(get!(node, "instr"))?),
-    "Label" => InstrOrLabel::Label(Rc::<str>::from(value!(node))),
+	"Label" => InstrOrLabel::Label(read_label(get!(node, "label"))?),
     }})
 }
 
 fn read_ast(ast: BeansAST) -> Result<AST> {
     let mut node = node!(ast);
     Ok(AST {
-        instr_or_label: read_list(read_instr_or_label, get!(node, "instrlbls"))?,
+        instr_or_label: read_list(
+            read_instr_or_label,
+            get!(node, "instrlbls"),
+        )?,
     })
 }
 
