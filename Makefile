@@ -5,7 +5,7 @@ LATEX := lualatex
 LATEX_FLAGS := -interaction=batchmode -output-directory=out
 COMPILER ?= iverilog
 
-all: out/cpu out/instructionset.pdf out/asj
+all: build out/instructionset.pdf out/asj
 .PHONY: all
 
 build: out/cpu
@@ -16,20 +16,27 @@ run: out/cpu
 .PHONY: run
 
 clean:
-	@echo "Removing out/*"
-	@$(RM) out/*
+	$(RM) out/*
+	$(RM) target/*
 .PHONY: clean
 
-check:
-	@- $(foreach file,$(SOURCES),svlint $(file))
+check/cpu:
+	@-$(foreach file,$(SOURCES),svlint $(file))
+.PHONY: check/cpu
+
+check/asj:
+	cargo clippy
+.PHONY: check/asj
+
+check: check/cpu
 .PHONY: check
 
-testasj: out/asj
+test/asj: out/asj
 	@assembler/run-tests
-.PHONY: testasj
+.PHONY: test/asj
 
-tests: testasj
-.PHONY: tests
+test: test/asj
+.PHONY: test
 
 doc: out/instructionset.pdf
 .PHONY: all
@@ -40,10 +47,10 @@ out:
 out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
 	$(LATEX) $(LATEX_FLAGS) $<
 
-out/%: target/release/%
+out/asj: target/release/asj
 	@cp $< $@
 
-out/%-debug: target/debug/%s
+out/asj-debug: target/debug/asj
 
 target/release/asj: $(ASSEMBLER_SOURCES)
 	cargo build --release
