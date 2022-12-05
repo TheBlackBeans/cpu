@@ -86,7 +86,7 @@ immediates.
 
 \section*{Implementation details}
 \subsection*{RAM operations}
-\verb|load| and \verb|store| are encoded in the same way, but for the arity. This
+\verb|load| and \verb|store| are encoded in the same way, except for the arity. This
 allows merging them into a single operation, with the arity feeding the \verb|we|
 flag of the RAM and register file modules.
 \subsection*{Comparison operation}
