@@ -1,21 +1,33 @@
-all:
+build:
 
+LATEX ?= lualatex
+LATEX_FLAGS ?= -interaction=batchmode -output-directory=out
 COMPILER ?= iverilog
+COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 
 # Meta targets
-all: out/cpu
+all: build doc
 .PHONY: all
 
-build: out/cpu
+build: out/cpu out/asj
 .PHONY: build
+
+doc: out/instructionset.pdf
+.PHONY: doc
+
+check: check/cpu check/asj
+.PHONY: check
+
+test: test/cpu test/asj
+.PHONY: test
 
 run: out/cpu
 	@out/cpu
 .PHONY: run
 
 clean:
-	@echo "Removing out/*"
-	@$(RM) out/*
+	$(RM) out/*
+	$(RM) target/*
 .PHONY: clean
 
 # Directories
@@ -23,23 +35,59 @@ out:
 	@mkdir out
 
 # CPU-relevant stuff
-CPU_SOURCES := \
+CPU_SOURCES := $(wildcard src/*.sv)
+#CPU_SOURCES := \
 	src/ip.sv \
 	src/reg.sv \
 	src/main.sv # Last one
 
 out/cpu: $(CPU_SOURCES) | out
 	@echo "Compiling the CPU"
-	@$(COMPILER) -o $@ $^
+	@$(COMPILER) $(COMPILER_FLAGS) -o $@ $^
 
-lint:
+check/cpu:
 	@echo "Calling svlint (if it exists)"
 	@if which svlint >/dev/null 2>&1; then $(foreach file,$(CPU_SOURCES),svlint $(file);) fi
+	@echo "Null-building the CPU"
+	@$(COMPILER) $(COMPILER_FLAGS) -t null $(CPU_SOURCES)
 	@echo "Checking test decriptions"
 	@cd tests; for f in *; do if [[ -f "$$f/description.txt" ]]; then ./read_description.sh --lint "$$f"; fi; done
-.PHONY: lint
+.PHONY: check/cpu
 
-check: lint
-	@echo "Running tests"
+test/cpu: check/cpu
+	@echo "Running CPU tests"
 	@tests/run_tests.sh
-.PHONY: check
+.PHONY: test/cpu
+
+# Assembler-relevant stuff
+ASSEMBLER_SOURCES := $(wildcard assembler/*.rs) assembler/asj.clx assembler/asj.cgr
+
+out/asj: target/release/asj
+	@cp $< $@
+
+out/asj-debug: target/debug/asj
+	@cp $< $@
+
+target/release/asj: $(ASSEMBLER_SOURCES)
+	cargo build --release
+
+target/debug/asj: $(ASSEMBLER_SOURCES)
+	cargo build
+
+assembler/%.clx: assembler/%.lx
+	beans compile lexer $<
+
+assembler/%.cgr: assembler/%.gr assembler/%.clx
+	beans compile parser --lexer $(word 2,$^) $<
+
+check/asj:
+	cargo clippy
+.PHONY: check/asj
+
+test/asj: out/asj
+	@assembler/run-tests
+.PHONY: test/asj
+
+## Instruction set
+out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
+	$(LATEX) $(LATEX_FLAGS) $<
