@@ -4,7 +4,8 @@ shopt -s nullglob
 
 echecs=()
 echo -n "Running asj tests: "
-for f in assembler/tests/*.asj; do
+cd "$(dirname "$0")" || exit 2
+for f in tests/*.asj; do
     out/asj -o result $f
     if cmp --quiet \
 	   <(python assembler/printer.py result  2>/dev/null | sed -E 's/[0-9]+ \| ([01]+)/\1/')\
