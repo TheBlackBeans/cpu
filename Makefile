@@ -22,7 +22,7 @@ clean:
 .PHONY: clean
 
 check/cpu:
-	@-$(foreach file,$(SOURCES),svlint $(file))
+	@-$(foreach file,$(SOURCES),svlint $(file); $(COMPILER) $(COMPILER_FLAGS) -t null $(file);)
 .PHONY: check/cpu
 
 check/asj:
