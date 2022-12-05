@@ -53,7 +53,9 @@ All the other registers are general purpose 16 bit registers, which can be
 accessed both for writing and for reading, even in a single cycle, in which case
 the data read is the one stored in the register \textit{before} the write
 operation. Initially, every register must be set to zero, as should the
-RAM.
+RAM and the instruction pointer.\par
+The size of the RAM is left unspecified, and the instruction pointer must have
+the same size of a register.
 
 \section*{Instructions}
 An instruction is 32 bits wide. The first eight bits encode the
