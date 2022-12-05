@@ -56,8 +56,8 @@ impl EncodedInstr {
     fn set_range(&mut self, range: Range<usize>, value: u32) {
         let size = range.len();
         let destination = &mut self[range];
-        for i in 0..size {
-            destination[i] = value & (1 << i) != 0;
+        for (i, dest) in destination.iter_mut().enumerate().take(size) {
+            *dest = value & (1 << i) != 0;
         }
     }
 }
@@ -150,7 +150,7 @@ pub fn to_blob(ast: &AST, output: &Path) -> Result<()> {
                 labels.add_global_label(label.clone(), instructions.len())
             }
             InstrOrLabel::Label(Label::Local(label)) => {
-                labels.add_local_label(label.clone(), instructions.len())
+                labels.add_local_label(*label, instructions.len())
             }
         }
     }

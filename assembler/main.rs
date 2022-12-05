@@ -1,3 +1,5 @@
+#![allow(clippy::upper_case_acronyms, clippy::unusual_byte_groupings)]
+
 use anyhow::Result;
 use clap::Parser;
 use compile::to_blob;

@@ -170,7 +170,7 @@ fn read_jmp_arg(ast: BeansAST) -> Result<Arg> {
     Ok(match_variant! {(node) {
     "Arg" => read_arg(get!(node, "arg"))?,
 	"Global" => Arg::Immediate(
-	    Immediate::Label(LabelImmediate::Global(Rc::<str>::from(value!(node))))
+	    Immediate::Label(LabelImmediate::Global(value!(node)))
 	),
 	"Forward" => Arg::Immediate(
 	    Immediate::Label(LabelImmediate::Forward(value!(node).parse()?))
@@ -306,7 +306,7 @@ fn read_instruction(ast: BeansAST) -> Result<Instruction> {
 fn read_label(ast: BeansAST) -> Result<Label> {
     let mut node = node!(ast);
     Ok(match_variant! {(node) {
-	"Global" => Label::Global(Rc::<str>::from(value!(node))),
+	"Global" => Label::Global(value!(node)),
 	"Local" => Label::Local(value!(node).parse()?),
     }})
 }
