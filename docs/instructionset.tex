@@ -52,7 +52,7 @@ The first register always contains zeros. It can be used as any other register.\
 All the other registers are general purpose 16 bit registers, which can be
 accessed both for writing and for reading, even in a single cycle, in which case
 the data read is the one stored in the register \textit{before} the write
-operation. Every register must initially be initialized to zeros, as should the
+operation. Initially, every register must be set to zero, as should the
 RAM.
 
 \section*{Instructions}
@@ -233,7 +233,7 @@ bit.
     \midrule
     \multicolumn{3}{c}{\(r_d = \op(i)\)}\\
     \(\instr[0:0]\) & \(0\) & 1 bit\\
-    \(\instr[5:2]\) & \(\op\) & 5 bits\\
+    \(\instr[5:1]\) & \(\op\) & 5 bits\\
     \(\instr[6:6]\) & \(0\) & 1 bit\\
     \(\instr[11:8]\) & \(r_d\) & 4 bits\\
     \(\instr[27:12]\) & \(i\) & 16 bits\\
