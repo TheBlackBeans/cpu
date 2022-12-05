@@ -1,8 +1,8 @@
 SOURCES := $(wildcard src/*.sv)
 ASSEMBLER_SOURCES := $(wildcard assembler/*.rs)
 ASSEMBLER_SOURCES += assembler/asj.clx assembler/asj.cgr
-LATEX := lualatex
-LATEX_FLAGS := -interaction=batchmode -output-directory=out
+LATEX ?= lualatex
+LATEX_FLAGS ?= -interaction=batchmode -output-directory=out
 COMPILER ?= iverilog
 
 all: build out/instructionset.pdf out/asj
