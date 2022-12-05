@@ -4,12 +4,13 @@ ASSEMBLER_SOURCES += assembler/asj.clx assembler/asj.cgr
 LATEX ?= lualatex
 LATEX_FLAGS ?= -interaction=batchmode -output-directory=out
 COMPILER ?= iverilog
-
-all: build out/instructionset.pdf out/asj
-.PHONY: all
+COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 
 build: out/cpu
 .PHONY: build
+
+all: build doc out/asj
+.PHONY: all
 
 run: out/cpu
 	@out/cpu
@@ -39,7 +40,6 @@ test: test/asj
 .PHONY: test
 
 doc: out/instructionset.pdf
-.PHONY: all
 
 out:
 	@mkdir out
@@ -66,4 +66,4 @@ assembler/%.cgr: assembler/%.gr assembler/%.clx
 
 out/cpu: src/main.sv | out
 	@echo "Compiling the CPU"
-	@$(COMPILER) -o $@ $^
+	@$(COMPILER) $(COMPILER_FLAGS) -o $@ $^
