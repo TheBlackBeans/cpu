@@ -1,5 +1,5 @@
 SOURCES := $(wildcard src/*.sv)
-LATEX := lualatex
+LATEX ?= lualatex
 COMPILER ?= iverilog
 
 all: out/cpu out/instructionset.pdf
