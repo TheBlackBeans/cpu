@@ -29,7 +29,7 @@ check/asj:
 	cargo clippy
 .PHONY: check/asj
 
-check: check/cpu
+check: check/cpu check/asj
 .PHONY: check
 
 test/asj: out/asj
