@@ -19,7 +19,7 @@ module Regfile
       else begin
 	 r1data <= regfile[r1];
 	 r2data <= regfile[r2];
-	 if (we)
+	 if (we && !rd)
 	   regfile[rd] <= rddata;
       end
    end
