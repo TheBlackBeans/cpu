@@ -1,0 +1,328 @@
+\documentclass{scrartcl}
+\usepackage{cmap}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{booktabs, array}
+\usepackage{tikz, environ}
+\usepackage{pgffor, fp}
+\usepackage{hyperref}
+
+%%%%%%%%%
+% SETUP %
+%%%%%%%%%
+
+\usetikzlibrary{decorations.pathreplacing, calligraphy, arrows.meta}
+
+\DeclareMathOperator{\op}{op}
+\DeclareMathOperator{\instr}{instr}
+
+\makeatletter
+\newsavebox{\measure@tikzpicture}
+\NewEnviron{scalepicture}[1]{%
+  \def\tikz@width{#1}%
+  \def\tikzscale{1}\begin{lrbox}{\measure@tikzpicture}%
+  \BODY
+  \end{lrbox}%
+  \pgfmathparse{#1/\wd\measure@tikzpicture}%
+  \edef\tikzscale{\pgfmathresult}%
+  \BODY
+}
+\makeatother
+
+%%%%%%%%%%%%
+% DOCUMENT %
+%%%%%%%%%%%%
+
+\title{Instruction set reference}
+\author{%
+  Jean \textsc{Caspar},
+  Loïc \textsc{Chevalier},
+  Vladimir \textsc{Ivanov},
+  Adrien \textsc{Mathieu}
+}
+\date{}
+
+\begin{document}
+\maketitle{}
+\section*{Hardware requirements}
+This instruction set requires 16 accessible registers, \(r_0,\ldots,r_{15}\), as
+well as an instruction pointer \(ip\) and a RAM.\par
+The first register \(r_0\) can be used the destination of an operation, in which
+case the result of the aforementioned operation is ignored. It can also be used
+as a source register, in which can it acts as the constant \(0\).\par
+All the other registers are general purpose 16 bit registers, which can be
+accessed both for writing and for reading, even in a single cycle.
+The data read is the one stored in the register \textit{before} the write
+operation. Initially, every register must be set to zero, as should the
+RAM and the instruction pointer.\par
+The size of the RAM is left unspecified, and the instruction pointer must have
+the same size of the general registers.
+
+\section*{Instructions}
+An instruction is 32 bits wide. The first eight bits encode the
+instruction code, the 24 remaining bits contain the arguments. See
+the figure \nameref{fig:instrs} and the table \nameref{tab:instrs}.
+\subsection*{Instruction code}
+The first bit of an instruction code corresponds to the arity of the instruction.
+A $0$ means an arity of one, a $1$ means an arity of two. Every instruction
+additionally receives a \emph{destination register} $r_d$, in which the result of
+the operation must be stored, unless told otherwise.\par
+The next five bits encode to the operation. The first two bits indicate the
+operation family:
+\begin{itemize}
+\item $00$: Arithmetic and logic operation.
+\item $01$: Jump operation.
+\item $10$: RAM operation
+\item $11$: Comparison operation.
+\end{itemize}
+The next three bits specify the actual operation performed.\par
+The two final bits of the instruction code indicate whether arguments are
+registers or immediates, $1$ meaning register and $0$ immediate. The first of
+these two bits corresponds to $a_1$, whereas the second to $a_2$.
+\subsection*{Arguments}
+Arguments are of two kind: immediates and registers. Registers require four bits,
+whereas immediates are 16 bits signed integers. At most one immediate can be
+given.\par
+The first ``argument'' is always a register, $r_d$. The next argument $a_1$, or
+the next two arguments $a_1$ and $a_2$, in this order, can be registers or
+immediates.
+
+\section*{Implementation details}
+\subsection*{RAM operations}
+\verb|load| and \verb|store| are encoded in the same way, except for the arity. This
+allows merging them into a single operation, with the arity feeding the \verb|we|
+flag of the RAM and register file modules.
+\subsection*{Comparison operation}
+The comparison operation's last three bits encore the actual comparison made.
+In these three bits, the last two are used to distinguish between \(=\), \(<\)
+and \(>\), whilst the first bit is used to negate the output. This allows only
+implementing three actual comparisons, and \verb|xor| the result with the first
+bit.
+\begin{figure}[b]
+  \label{fig:instrs}
+  \begin{scalepicture}{\textwidth}
+    \begin{tikzpicture}[
+      thick,
+      scale=\tikzscale,
+      brace/.style={
+        decorate,
+        decoration={
+          calligraphic brace,
+          raise=2pt,
+          amplitude=10pt,
+        },
+      }
+      ]
+
+      \draw[brace] (0,2) -- (24,2);
+      \draw[brace] (24,2) -- (32,2);
+      \node at (28,3.5) {instruction code};
+      \node at (12,3.5) {arguments};
+
+      %% 0, 1X
+      
+      \foreach \n in {0,...,31}{
+        \FPeval{\next}{clip(\n+1)}
+        \FPeval{\lab}{clip(31-\n)}
+        \draw (\n,0) rectangle (\next,1);
+        \node at (\n.5,1.5) {$\lab$};
+      }
+      \foreach \n in {16, 20, 24, 26, 31, 32}{
+        \draw[dotted] (\n,0) -- (\n,-1);
+      }
+      \node at (28.5,-.5) {operation};
+      \node at (22,-.5) {$r_d$};
+      
+      \node at (31.5,.5) {$0$};
+      \node at (25.5,.5) {$1$};
+      \node at (24.5,.5) {X};
+      \node at (18,-.5) {$r_1$};
+      \foreach \n in {0,...,15}{
+        \node at (\n.5,.5) {X};
+      }
+
+      %% 0, 0X
+      \foreach \n in {0,...,31}{
+        \FPeval{\next}{clip(\n+1)}
+        \draw (\n,-2) rectangle (\next,-1);
+      }
+      \foreach \n in {32,31,26,24,20,4}{
+      % \foreach \n in {0,1,6,8,12,28}{
+        \draw[dotted] (\n,-3) -- (\n,-2);
+      }
+      \node at (28.5,-2.5) {operation};
+      \node at (22,-2.5) {$r_d$};
+      \node at (31.5,-1.5) {$0$};
+      
+      \node at (25.5,-1.5) {$0$};
+      \node at (24.5,-1.5) {X};
+      \node at (12,-2.5) {$i$};
+      \foreach \n in {0,...,3}{
+        \node at (\n.5,-1.5) {X};
+      }
+
+      %% 1, 11
+      \foreach \n in {0,...,31}{
+        \FPeval{\next}{clip(\n+1)}
+        \draw (\n,-4) rectangle (\next,-3);
+      }
+      \foreach \n in {32,31,26,24,20,16,4}{
+        \draw[dotted] (\n,-5) -- (\n,-4);
+      }
+      \node at (28.5,-4.5) {operation};
+      \node at (22,-4.5) {$r_d$};
+      \node at (31.5,-3.5) {$1$};
+      
+      \node at (25.5,-3.5) {$1$};
+      \node at (24.5,-3.5) {$1$};
+      \node at (18,-4.5) {$r_1$};
+      \node at (2,-4.5) {$r_2$};
+      \foreach \n in {4,...,15}{
+        \node at (\n.5,-3.5) {X};
+      }
+
+      %% 1, 10
+      \foreach \n in {0,...,31}{
+        \FPeval{\next}{clip(\n+1)}
+        \draw (\n,-6) rectangle (\next,-5);
+      }
+      \foreach \n in {32,31,26,24,20,16,0}{
+        \draw[dotted] (\n,-7) -- (\n,-6);
+      }
+      \node at (28.5,-6.5) {operation};
+      \node at (22,-6.5) {$r_d$};
+      \node at (31.5,-5.5) {$1$};
+      
+      \node at (25.5,-5.5) {$1$};
+      \node at (24.5,-5.5) {$0$};
+      \node at (18,-6.5) {$r_1$};
+      \node at (8,-6.5) {$i$};
+
+      %% 1, 01
+      \foreach \n in {0,...,31}{
+        \FPeval{\next}{clip(\n+1)}
+        \draw (\n,-8) rectangle (\next,-7);
+      }
+      \foreach \n in {32,31,26,24,20,4,0}{
+        \draw[dotted] (\n,-9) -- (\n,-8);
+      }
+      \node at (28.5,-8.5) {operation};
+      \node at (22,-8.5) {$r_d$};
+      \node at (31.5,-7.5) {$1$};
+      
+      \node at (25.5,-7.5) {$0$};
+      \node at (24.5,-7.5) {$1$};
+      \node at (12,-8.5) {$i$};
+      \node at (2,-8.5) {$r_2$};
+    \end{tikzpicture}
+  \end{scalepicture}
+  \caption{Layout of instructions}
+\end{figure}
+
+\begin{table}
+  \center
+  \label{tab:instrs}
+  \caption{Layout of instructions}
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Bits used} & \textbf{value} & \textbf{size}\\
+    \midrule
+    \multicolumn{3}{c}{\(r_d = \op(r_1)\)}\\
+    \(\instr[0:0]\) & \(0\) & 1 bit\\
+    \(\instr[5:1]\) & \(\op\) & 5 bits\\
+    \(\instr[6:6]\) & \(1\) & 1 bit\\
+    \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+    \(\instr[15:12]\) & \(r_1\) & 4 bits\\
+    \midrule
+    \multicolumn{3}{c}{\(r_d = \op(i)\)}\\
+    \(\instr[0:0]\) & \(0\) & 1 bit\\
+    \(\instr[5:1]\) & \(\op\) & 5 bits\\
+    \(\instr[6:6]\) & \(0\) & 1 bit\\
+    \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+    \(\instr[27:12]\) & \(i\) & 16 bits\\
+    \midrule
+    \multicolumn{3}{c}{\(r_d = \op(r_1, r_2)\)}\\
+    \(\instr[0:0]\) & \(1\) & 1 bit\\
+    \(\instr[5:1]\) & \(\op\) & 5 bits\\
+    \(\instr[7:6]\) & \(11\) & 2 bits\\
+    \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+    \(\instr[15:12]\) & \(r_1\) & 4 bits\\
+    \(\instr[19:16]\) & \(r_2\) & 4 bits\\
+    \midrule
+    \multicolumn{3}{c}{\(r_d = \op(i, r_2)\)}\\
+    \(\instr[0:0]\) & \(1\) & 1 bits\\
+    \(\instr[5:1]\) & \(\op\) & 5 bits\\
+    \(\instr[7:6]\) & \(01\) & 2 bits\\
+    \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+    \(\instr[27:12]\) & \(i\) & 16 bits\\
+    \(\instr[31:28]\) & \(r_2\) & 4 bits\\
+    \midrule
+    \multicolumn{3}{c}{\(r_d = \op(r_1, i)\)}\\
+    \(\instr[0:0]\) & \(1\) & 1 bit\\
+    \(\instr[5:1]\) & \(\op\) & 5 bits\\
+    \(\instr[7:6]\) & \(10\) & 2 bits\\
+    \(\instr[11:8]\) & \(r_d\) & 4 bits\\
+    \(\instr[15:12]\) & \(r_1\) & 4 bits\\
+    \(\instr[31:16]\) & \(i\) & 16 bits\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}
+  \caption{Operation list}
+
+  \begin{tabular}{lcrlr}
+    \toprule
+    \textbf{Name} & \textbf{Arity} & \textbf{Encoding} & \textbf{Effect}\\
+    \midrule
+    \midrule
+    \multicolumn{3}{c}{Arithmetic and logic operation}\\
+    \midrule
+    add & 2 & \(00\;000\) & \(r_d=a_1+a_2\)\\
+    sub & 2 & \(00\;001\) & \(r_d=a_1-a_2\)\\
+    mul & 2 & \(00\;010\) & \(r_d=a_1\cdot a_2\)\\
+    div & 2 & \(00\;011\) & \(r_d=a_1/a_2\)\\
+    mod & 2 & \(00\;100\) & \(r_d=a_1\% a_2\)\\
+    and & 2 & \(00\;101\) & \(r_d=a_1 \& a_2\)\\
+    or & 2 & \(00\;110\) & \(r_d=a_1 | a_2\)\\
+    xor & 2 & \(00\;111\) & \(r_d=a_1\bigoplus a_2\)\\
+    \midrule
+    \multicolumn{3}{c}{Jump operation}\\
+    \midrule
+    jmp & 1 & \(01\;000\) & \(ip=a_1\)\\
+    jo & 1 & \(01\;001\) & \(ip=ip+a_1\)\\
+    jz & 2 & \(01\;000\) & if \(a_1=0\), \(ip=a_2\)\\
+    jzo & 2 & \(01\;001\) & if \(a_1=0\), \(ip=ip+a_2\)\\
+    jnz & 2 & \(01\;010\) & if \(a_1\neq0\), \(ip=a_2\)\\
+    jnzo & 2 & \(01\;011\) & if \(a_2\neq0\), \(ip=ip+a_2\)\\
+    \midrule
+    \multicolumn{3}{c}{Comparison operation}\\
+    \midrule
+    cmp\textit{cc} & 2 & \(11\;???\) & if \(a_1\;cc\;a_2\), \(r_d=1\),\\
+                  &  &  & otherwise \(r_d=0\)\\
+    \midrule
+    \multicolumn{3}{c}{RAM operation}\\
+    \midrule
+    load & 1 & \(10\;000\) & \(r_d=\mathrm{RAM}[a_1]\)\\
+    store & 2 & \(10\;000\) & \(\mathrm{RAM}[a_1]=a_2\)\\
+    \bottomrule
+  \end{tabular}
+  \quad
+  \begin{tabular}{lc}
+    \multicolumn{2}{c}{\(cc\) encoding}\\
+    \toprule
+    \textbf{Name} & \textbf{Encoding}\\
+    \midrule
+    eq & \(000\)\\
+    ne & \(100\)\\
+    lt & \(001\)\\
+    le & \(110\)\\
+    gt & \(010\)\\
+    ge & \(101\)\\
+    \bottomrule
+  \end{tabular}
+
+\end{table}
+\end{document}

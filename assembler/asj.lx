@@ -1,0 +1,47 @@
+ignore SPACES ::= \s+
+ignore NEWLINES ::= \n+
+ignore COMMENT ::= ;[^\n]*\n
+
+EQ ::= =
+REGISTER ::= r(\d|1[0-5])
+
+keyword ADD ::= add
+keyword SUB ::= sub
+keyword MUL ::= mul
+keyword DIV ::= div
+keyword MOD ::= mod
+keyword AND ::= and
+keyword OR ::= or
+keyword XOR ::= xor
+
+keyword JMP ::= jmp
+keyword JO ::= jo
+keyword JZ ::= jz
+keyword JZO ::= jzo
+keyword JNZ ::= jnz
+keyword JNZO ::= jnzo
+
+keyword CMPEQ ::= cmpeq
+keyword CMPNEQ ::= cmpne
+keyword CMPLT ::= cmplt
+keyword CMPLEQ ::= cmple
+keyword CMPGT ::= cmpgt
+keyword CMPGEQ ::= cmpge
+
+keyword LOAD ::= load
+keyword STORE ::= store
+
+LPAR ::= \(
+RPAR ::= \)
+PLUS ::= \+
+MINUS ::= -
+ASTERISK ::= \*
+SLASH ::= /
+INT ::= ([-+]?\d+)
+COMMA ::= ,
+
+LABEL ::= ([_a-zA-Z][_a-zA-Z0-9]*)
+LOCAL ::= (\d)
+FORWARD ::= (\d)f
+BACKWARD ::= (\d)b
+COLON ::= :
