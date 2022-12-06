@@ -2,20 +2,21 @@
 
 module Regfile
   (input logic clk,
-   input logic			reset_n,
-   input logic [addr_size-1:0]	r1,
-   input logic [addr_size-1:0]	r2,
-   input logic [addr_size-1:0]	rd,
-   input logic [cell_size-1:0]	rddata,
-   input logic			we,
-   output logic [cell_size-1:0]	r1data,
-   output logic [cell_size-1:0]	r2data);
+   input logic	       reset_n,
+   input logic [3:0]   r1,
+   input logic [3:0]   r2,
+   input logic [3:0]   rd,
+   input logic [15:0]  rddata,
+   input logic	       we,
+   output logic [15:0] r1data,
+   output logic [15:0] r2data);
    
-   logic [cell_size-1:0]	regfile [2**addr_size] = '{ default: 0 };
+   logic [15:0]	regfile [16];
    
    always @(posedge clk or negedge reset_n) begin
       if (!reset_n)
-	regfile = '{ default: 0 };
+	for (int i = 0; i < 16; i++)
+	  regfile[i] <= 0;
       else begin
 	 r1data <= regfile[r1];
 	 r2data <= regfile[r2];
@@ -23,4 +24,4 @@ module Regfile
 	   regfile[rd] <= rddata;
       end
    end
-endmodule // Ram    
+endmodule // Regfile
