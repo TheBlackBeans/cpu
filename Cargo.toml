@@ -1,0 +1,13 @@
+[package]
+edition = "2021"
+name = "asj"
+version = "0.1.0"
+
+[[bin]]
+name = "asj"
+path = "assembler/main.rs"
+
+[dependencies]
+anyhow = "1.0.66"
+beans = "6.6"
+clap = "4.0.29"
