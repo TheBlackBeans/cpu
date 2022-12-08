@@ -22,7 +22,7 @@ then
 fi
 
 eval "$(grep "SEPARATOR=" run_tests.sh)"
-eval "$(grep "DEPENDANCIES=" run_tests.sh)"
+eval "$(grep "DEPENDENCIES=" run_tests.sh)"
 
 enbls=()
 names=()
@@ -60,19 +60,19 @@ do
 	desc="$(echo "$l" | cut -d"$SEPARATOR" -f2)"
 	cmd2="$(echo "$l" | cut -d"$SEPARATOR" -f3-)"
 	
-	name="$(echo "$desc" | cut -d"$DEPENDANCIES" -f1)"
-	deps="$(echo "$desc" | cut -d"$DEPENDANCIES" -s -f2-)"
+	name="$(echo "$desc" | cut -d"$DEPENDENCIES" -f1)"
+	deps="$(echo "$desc" | cut -d"$DEPENDENCIES" -s -f2-)"
 	if [[ -n "$deps" ]]
 	then
 		any_has_deps=true
-		if [[ -z "$(echo "$deps" | cut -d"$DEPENDANCIES" -s -f1-)" ]]
+		if [[ -z "$(echo "$deps" | cut -d"$DEPENDENCIES" -s -f1-)" ]]
 		then
 			(( max_dlen = max_dlen < ${#deps} ? ${#deps} : max_dlen ))
 		else
 			i=1
-			while [[ -n "$(echo "$deps" | cut -d"$DEPENDANCIES" -s -f$i-)" ]]
+			while [[ -n "$(echo "$deps" | cut -d"$DEPENDENCIES" -s -f$i-)" ]]
 			do
-				dep="$(echo "$deps" | cut -d"$DEPENDANCIES" -f$i)"
+				dep="$(echo "$deps" | cut -d"$DEPENDENCIES" -f$i)"
 				(( max_dlen = max_dlen < ${#dep} ? ${#dep} : max_dlen ))
 				(( i++ ))
 			done
@@ -111,7 +111,7 @@ declnames=()
 
 while (( idx < imax ))
 do
-	fst_dep="$(echo "${depss[idx]}" | cut -d"$DEPENDANCIES" -f1)"
+	fst_dep="$(echo "${depss[idx]}" | cut -d"$DEPENDENCIES" -f1)"
 	fst_found=false; for n in "${declnames[@]}"; do if [[ "$n" == "$fst_dep" ]]; then fst_found=true; break; fi done
 	
 	if $lint
@@ -124,16 +124,16 @@ do
 				failed_deps="$fst_dep"
 			fi
 			j=2
-			while [[ -n "$(echo "${depss[idx]}" | cut -d"$DEPENDANCIES" -s -f$j-)" ]]
+			while [[ -n "$(echo "${depss[idx]}" | cut -d"$DEPENDENCIES" -s -f$j-)" ]]
 			do
-				dep="$(echo "${depss[idx]}" | cut -d"$DEPENDANCIES" -f$j)"
+				dep="$(echo "${depss[idx]}" | cut -d"$DEPENDENCIES" -f$j)"
 				found=false; for n in "${declnames[@]}"; do if [[ "$n" == "$dep" ]]; then found=true; break; fi done
 				$found || failed_deps="$dep"
 				(( j++ ))
 			done
 			if [[ -n "$failed_deps" ]]
 			then
-				echo "$1: test ${names[idx]} has an external or misstyped dependancy $failed_deps"
+				echo "$1: test ${names[idx]} has an external or mistyped dependency $failed_deps"
 			fi
 		fi
 	fi
@@ -144,10 +144,10 @@ do
 		echo -n " | ${refs[idx]}"; i=${#refs[idx]}; while (( i < max_rlen )); do echo -n " "; (( i++ )); done
 		echo " | ${cmds[idx]}"
 		j=2
-		while [[ -n "$(echo "${depss[idx]}" | cut -d"$DEPENDANCIES" -s -f$j-)" ]]
+		while [[ -n "$(echo "${depss[idx]}" | cut -d"$DEPENDENCIES" -s -f$j-)" ]]
 		do
 			i=0; while (( i < max_nlen )); do echo -n " "; (( i++ )); done
-			dep="$(echo "${depss[idx]}" | cut -d"$DEPENDANCIES" -f$j)"
+			dep="$(echo "${depss[idx]}" | cut -d"$DEPENDENCIES" -f$j)"
 			found=false; for n in "${declnames[@]}"; do if [[ "$n" == "$dep" ]]; then found=true; break; fi done
 			echo -n " | $($found && echo $'\e[32m' || echo $'\e[31m')$dep"$'\e[m'; i=${#dep}; while (( i < max_dlen )); do echo -n " "; (( i++ )); done
 			echo -n " | "; i=0; while (( i < max_rlen )); do echo -n " "; (( i++ )); done

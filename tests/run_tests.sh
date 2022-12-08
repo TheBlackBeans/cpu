@@ -6,7 +6,7 @@
 # 
 # description.txt:
 # <first line, copied directly into the compiler command line for every test>
-# <reference>@<name>`<dependancy 1>`<dependancy 2>...@<copied into the command line for this test>
+# <reference>@<name>`<dependency 1>`<dependency 2>...@<copied into the command line for this test>
 #
 # The entire folder can be skipped by adding a '#' at its very top (eg, the first line starts with a '#')
 # or a specific test can be skipped by prepending a '#' at the beginning of the line.
@@ -52,7 +52,7 @@ function test_skipped()
 }
 
 SEPARATOR='@'
-DEPENDANCIES='`'
+DEPENDENCIES='`'
 
 function run_test()
 {
@@ -78,7 +78,7 @@ function run_test()
 		desc="$(echo "$l" | cut -d"$SEPARATOR" -f2)"
 		compile_files="$(echo "$l" | cut -d"$SEPARATOR" -f3-)"
 		
-		name="$(echo "$desc" | cut -d"$DEPENDANCIES" -f1)"
+		name="$(echo "$desc" | cut -d"$DEPENDENCIES" -f1)"
 		
 		if [[ -z "$output_file" ]] || [[ -z "$name" ]] || [[ "$l" =~ ^# ]]
 		then
@@ -91,9 +91,9 @@ function run_test()
 			continue
 		fi
 		i=2
-		while [[ -n "$(echo "$desc" | cut -s -d"$DEPENDANCIES" -f$i)" ]]
+		while [[ -n "$(echo "$desc" | cut -s -d"$DEPENDENCIES" -f$i)" ]]
 		do
-			dep="$(echo "$desc" | cut -s -d"$DEPENDANCIES" -f$i)"
+			dep="$(echo "$desc" | cut -s -d"$DEPENDENCIES" -f$i)"
 			if ! [[ -n "${passed_tests["$dep"]+_}" ]]
 			then
 				test_skipped "$name"
@@ -106,7 +106,7 @@ function run_test()
 			fi
 			(( i++ ))
 		done
-		[[ -n "$(echo "$desc" | cut -s -d"$DEPENDANCIES" -f$i)" ]] && continue
+		[[ -n "$(echo "$desc" | cut -s -d"$DEPENDENCIES" -f$i)" ]] && continue
 		
 		(( total++ ))
 		# shellcheck disable=SC2086
