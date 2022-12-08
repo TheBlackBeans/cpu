@@ -1,57 +1,70 @@
-SOURCES := $(wildcard src/*.sv)
-ASSEMBLER_SOURCES := $(wildcard assembler/*.rs)
-ASSEMBLER_SOURCES += assembler/asj.clx assembler/asj.cgr
+build:
+
 LATEX ?= lualatex
 LATEX_FLAGS ?= -interaction=batchmode -output-directory=out
 COMPILER ?= iverilog
 COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 
-build: out/cpu
+# Meta targets
+all: build doc
+.PHONY: all
+
+build: out/cpu out/asj
 .PHONY: build
 
-all: build doc out/asj
-.PHONY: all
+doc: out/instructionset.pdf
+.PHONY: doc
+
+check: check/cpu check/asj
+.PHONY: check
+
+test: test/cpu test/asj
+.PHONY: test
 
 run: out/cpu
 	@out/cpu
 .PHONY: run
 
 clean:
-	$(RM) out/*
-	$(RM) target/*
+	[ -d out ] && $(RM) out/*
+	$(RM) -r target
 .PHONY: clean
-
-check/cpu:
-	@-svlint $(SOURCES)
-	@-$(COMPILER) $(COMPILER_FLAGS) -t null $(SOURCES)
-.PHONY: check/cpu
-
-check/asj:
-	cargo clippy
-.PHONY: check/asj
-
-check: check/cpu check/asj
-.PHONY: check
-
-test/asj: out/asj
-	@assembler/run-tests
-.PHONY: test/asj
-
-test: test/asj
-.PHONY: test
-
-doc: out/instructionset.pdf
 
 out:
 	@mkdir out
 
-out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
-	$(LATEX) $(LATEX_FLAGS) $<
+# CPU-relevant stuff
+CPU_SOURCES := $(wildcard src/*.sv)
+#CPU_SOURCES := \
+	src/ip.sv \
+	src/reg.sv \
+	src/main.sv # Last one
+
+out/cpu: $(CPU_SOURCES) | out
+	@echo "Compiling the CPU"
+	@$(COMPILER) $(COMPILER_FLAGS) -o $@ $^
+
+check/cpu:
+	@if which svlint >/dev/null 2>&1; then echo "Calling svlint"; $(foreach file,$(CPU_SOURCES),svlint $(file);) fi
+	@echo "Null-building the CPU"
+	@$(COMPILER) $(COMPILER_FLAGS) -t null $(CPU_SOURCES)
+	@echo "Checking test decriptions"
+	@cd tests; for f in *; do if [[ -f "$$f/description.txt" ]]; then ./read_description.sh --lint "$$f"; fi; done
+.PHONY: check/cpu
+
+test/cpu: check/cpu
+	@echo "Running CPU tests"
+	@tests/run_tests.sh
+.PHONY: test/cpu
+
+# Assembler-relevant stuff
+ASSEMBLER_SOURCES := $(wildcard assembler/*.rs) assembler/asj.clx assembler/asj.cgr
 
 out/asj: target/release/asj
 	@cp $< $@
 
 out/asj-debug: target/debug/asj
+	@cp $< $@
 
 target/release/asj: $(ASSEMBLER_SOURCES)
 	cargo build --release
@@ -63,8 +76,16 @@ assembler/%.clx: assembler/%.lx
 	beans compile lexer $<
 
 assembler/%.cgr: assembler/%.gr assembler/%.clx
-	beans compile parser --lexer $(word  2,$^) $<
+	beans compile parser --lexer $(word 2,$^) $<
 
-out/cpu: src/main.sv | out
-	@echo "Compiling the CPU"
-	@$(COMPILER) $(COMPILER_FLAGS) -o $@ $^
+check/asj:
+	cargo clippy
+.PHONY: check/asj
+
+test/asj: out/asj
+	@assembler/run-tests
+.PHONY: test/asj
+
+## Instruction set
+out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
+	$(LATEX) $(LATEX_FLAGS) $<
