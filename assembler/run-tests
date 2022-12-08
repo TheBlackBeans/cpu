@@ -6,10 +6,10 @@ echecs=()
 echo -n "Running asj tests: "
 cd "$(dirname "$0")" || exit 2
 for f in tests/*.asj; do
-    out/asj -o result $f
+    ../out/asj -o result $f
     if cmp --quiet \
-	   <(python assembler/printer.py result  2>/dev/null | sed -E 's/[0-9]+ \| ([01]+)/\1/')\
-	   assembler/tests/`basename $f .asj`.out; then
+	   <(python printer.py result 2>/dev/null | sed -E 's/[0-9]+ \| ([01]+)/\1/') \
+	   tests$(basename $f .asj).out; then
 	echo -n .
     else
 	echo -n X
