@@ -9,16 +9,16 @@ COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 all: build doc
 .PHONY: all
 
-build: out/cpu out/asj
+build: out/cpu out/vm out/asj
 .PHONY: build
 
 doc: out/instructionset.pdf
 .PHONY: doc
 
-check: check/cpu check/asj
+check: check/cpu check/vm check/asj
 .PHONY: check
 
-test: test/cpu test/asj
+test: test/cpu test/vm test/asj
 .PHONY: test
 
 run: out/cpu
@@ -56,6 +56,21 @@ test/cpu: check/cpu
 	@echo "Running CPU tests"
 	@tests/run_tests.sh
 .PHONY: test/cpu
+
+# VM-relevant stuff
+VM_SOURCES := vm/main.cpp
+
+out/vm: $(VM_SOURCES) | out
+	@echo "Compiling the VM"
+	@$(CXX) $(CXXFLAGS) -g -O2 -Wall -Wextra -o $@ $^
+
+check/vm:
+	@echo "No VM check"
+.PHONY: check/vm
+
+test/vm: check/vm
+	@echo "No VM test available"
+.PHONY: test/vm
 
 # Assembler-relevant stuff
 ASSEMBLER_SOURCES := $(wildcard assembler/*.rs) assembler/asj.clx assembler/asj.cgr
