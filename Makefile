@@ -45,7 +45,7 @@ out/cpu: $(CPU_SOURCES) | out
 	@$(COMPILER) $(COMPILER_FLAGS) -o $@ $^
 
 check/cpu:
-	@if which svlint >/dev/null 2>&1; then echo "Calling svlint"; svlint $(CPU_SOURCES) fi
+	@if which svlint >/dev/null 2>&1; then echo "Calling svlint"; svlint $(CPU_SOURCES); fi
 	@echo "Null-building the CPU"
 	@$(COMPILER) $(COMPILER_FLAGS) -t null $(CPU_SOURCES)
 	@echo "Checking test decriptions"
