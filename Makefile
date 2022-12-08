@@ -26,8 +26,8 @@ run: out/cpu
 .PHONY: run
 
 clean:
-	$(RM) out/*
-	$(RM) target/*
+	[ -d out ] && $(RM) out/*
+	$(RM) -r target
 .PHONY: clean
 
 # Directories
