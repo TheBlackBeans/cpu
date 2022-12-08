@@ -1,4 +1,6 @@
-module instruction_pointer
+`default_nettype none
+
+module InstructionPointer
 	#(parameter bits = 32, isize = 2) // Instruction SIZE = log2(instruction width in 8-bit bytes)
 	(input clk, input rstn,
 	 input             incr,
@@ -8,7 +10,7 @@ module instruction_pointer
 	
 	wire logic[bits-1:0] nxtaddr;
 	
-	single_register#(.bits(bits)) val(
+	Reg#(.bits(bits)) val(
 		.clk,
 		.rstn,
 		.wenable(1'b1),
