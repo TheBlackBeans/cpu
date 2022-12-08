@@ -4,7 +4,7 @@ module Ram #(parameter addr_size = 4,
 	     parameter cell_size = 16,
 	     parameter size = 2**addr_size)
    (input logic clk,
-    input logic			 reset_n,
+    input logic			 rstn,
     input logic [addr_size-1:0]	 ra,
     input logic [addr_size-1:0]	 wa,
     input logic [cell_size-1:0]	 data,
@@ -13,8 +13,8 @@ module Ram #(parameter addr_size = 4,
    
    logic [cell_size-1:0]	 ram [size];
    
-   always @(posedge clk or negedge reset_n) begin
-      if (!reset_n)
+   always @(posedge clk or negedge rstn) begin
+      if (!rstn)
 	for (int i = 0; i < size; i++)
 	  ram[i] <= 0;
       else begin
