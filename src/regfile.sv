@@ -2,7 +2,7 @@
 
 module Regfile
   (input logic clk,
-   input logic	       reset_n,
+   input logic	       rstn,
    input logic [3:0]   r1,
    input logic [3:0]   r2,
    input logic [3:0]   rd,
@@ -13,8 +13,8 @@ module Regfile
    
    logic [15:0]	regfile [16];
    
-   always @(posedge clk or negedge reset_n) begin
-      if (!reset_n)
+   always @(posedge clk or negedge rstn) begin
+      if (!rstn)
 	for (int i = 0; i < 16; i++)
 	  regfile[i] <= 0;
       else begin
