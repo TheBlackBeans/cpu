@@ -1,4 +1,6 @@
-module single_register
+`default_nettype none
+
+module Reg
 	#(parameter bits = 32)
 	(input clk, input rstn,
 	 input             wenable,

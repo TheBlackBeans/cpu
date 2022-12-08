@@ -30,7 +30,6 @@ clean:
 	$(RM) -r target
 .PHONY: clean
 
-# Directories
 out:
 	@mkdir out
 
@@ -46,8 +45,7 @@ out/cpu: $(CPU_SOURCES) | out
 	@$(COMPILER) $(COMPILER_FLAGS) -o $@ $^
 
 check/cpu:
-	@echo "Calling svlint (if it exists)"
-	@if which svlint >/dev/null 2>&1; then $(foreach file,$(CPU_SOURCES),svlint $(file);) fi
+	@if which svlint >/dev/null 2>&1; then echo "Calling svlint"; $(foreach file,$(CPU_SOURCES),svlint $(file);) fi
 	@echo "Null-building the CPU"
 	@$(COMPILER) $(COMPILER_FLAGS) -t null $(CPU_SOURCES)
 	@echo "Checking test decriptions"

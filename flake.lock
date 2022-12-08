@@ -8,11 +8,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1669395551,
-        "narHash": "sha256-3S28V7rSMALiKkW9XGUL9zmrOW9PJ9R9xnZ9BJvXomE=",
+        "lastModified": 1670264244,
+        "narHash": "sha256-dhIiiHzdcRxBo1F57kojdigYah36haeyw06HGQHxQC0=",
         "owner": "jthulhu",
         "repo": "beans",
-        "rev": "075f38b7a4a5a04bf127fd7019f094e3111b3cb6",
+        "rev": "53f27ac6e25c27b89d3acf9de7b49af44c9001e9",
         "type": "github"
       },
       "original": {
