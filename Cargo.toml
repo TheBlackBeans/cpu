@@ -9,5 +9,5 @@ path = "assembler/main.rs"
 
 [dependencies]
 anyhow = "1.0.66"
-beans = "6.5"
+beans = "6.6"
 clap = "4.0.29"
