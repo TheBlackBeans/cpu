@@ -3,7 +3,7 @@ module main;
 	reg [3:0] data;
 	wire [3:0] out;
 	
-	single_register#(.bits(4)) r(.clk, .rstn, .wenable(enable), .wdata(data), .rdata(out));
+	Reg#(.bits(4)) r(.clk, .rstn, .wenable(enable), .wdata(data), .rdata(out));
 	
 	always #1 clk = ~clk;
 	
