@@ -86,12 +86,12 @@ impl Labels {
     }
 
     fn add_local_label(&mut self, label: u8, position: usize) {
-	if position == 0 {
-	    self.backward.insert(label, position);
-	} else {
+        if position == 0 {
+            self.backward.insert(label, position);
+        } else {
             self.label_place.entry(position).or_default().push(label);
             self.forward.entry(label).or_default().push(position);
-	}
+        }
     }
 
     fn end_setup(&mut self) {
