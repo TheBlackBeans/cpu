@@ -136,6 +136,7 @@ cd "$(dirname "$0")" || exit 2
 echo "Testing using '"$'\e[1m'"$compiler"$'\e[m'"' in $(pwd)"
 
 run_test "reg"
+run_test "alu"
 # <--- INSERT HERE
 
 echo "$failure_txt"

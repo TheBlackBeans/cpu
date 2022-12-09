@@ -1,0 +1,9 @@
+-g2012 ../src/alu.sv
+alu/addition.txt@Addition@alu/addition.sv
+alu/subtraction.txt@Subtraction@alu/subtraction.sv
+alu/multiplication.txt@Multiplication@alu/multiplication.sv
+alu/division.txt@Division@alu/division.sv
+alu/modulo.txt@Modulo@alu/modulo.sv
+alu/bitwise_and.txt@Bitwise And@alu/bitwise_and.sv
+alu/bitwise_or.txt@Bitwise Or@alu/bitwise_or.sv
+alu/bitwise_xor.txt@Bitwise Xor@alu/bitwise_xor.sv
