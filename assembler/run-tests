@@ -8,7 +8,7 @@ cd "$(dirname "$0")" || exit 2
 for f in tests/*.asj; do
     ../out/asj -o result "$f" || continue
     if cmp --quiet \
-	   <(python printer.py result 2>/dev/null | sed -E 's/[0-9]+ \| ([01]+)/\1/') \
+	   <(python printer.py result 2>/dev/null | sed -E 's/[0-9]+ \| ([01]+) \| .*/\1/') \
 	   "tests/$(basename "$f" .asj).out"; then
 	echo -n '.'
     else

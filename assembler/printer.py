@@ -1,4 +1,5 @@
 import sys
+import decoder
 
 with open(sys.argv[1], "rb") as f:
     blob_content = f.read()
@@ -6,4 +7,4 @@ with open(sys.argv[1], "rb") as f:
     for i in range(size):
         instruction = int.from_bytes(blob_content[4*i:4*(i+1)], 'little')
         formatted_instruction = f"{bin(instruction)[2:]:0>32}"
-        print(f"{i:0>9} | {formatted_instruction}")
+        print(f"{i:0>9} | {formatted_instruction} | {decoder.Instruction(instruction)}")
