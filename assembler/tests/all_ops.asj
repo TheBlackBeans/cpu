@@ -7,7 +7,7 @@ arithmetic:
 	r4 = mod r1, r2
 	r5 = and r5, r7
 	r6 = or r1, 2
-        r7 = xor r2, r5
+	r7 = xor r2, r5
 
 ; Jump operations
 jump:
@@ -26,6 +26,8 @@ comparison:
 	r11 = cmple r3, 18403
 	r12 = cmpgt r3, r8
 	r13 = cmpge r5, r12
+	r14 = cmpab r14, 1943
+	r15 = cmpbe -41, r1
 
 ; RAM operations
 ram:
