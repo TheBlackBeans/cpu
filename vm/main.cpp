@@ -116,12 +116,12 @@ int main(int argc, char **argv) {
 		case 0b001101: set_dest(insn, regs, get_arg1(insn, regs) | get_arg2(insn, regs)); break; // or
 		case 0b001111: set_dest(insn, regs, get_arg1(insn, regs) ^ get_arg2(insn, regs)); break; // xor
 		
-		case 0b010000:                                ip  = get_arg1(insn, regs); break; // jmp
-		case 0b010010:                                ip += get_arg1(insn, regs); break; // jo
-		case 0b010001: if (get_arg2(insn, regs) == 0) ip  = get_arg1(insn, regs); break; // jz
-		case 0b010011: if (get_arg2(insn, regs) == 0) ip += get_arg1(insn, regs); break; // jzo
-		case 0b010101: if (get_arg2(insn, regs) != 0) ip  = get_arg1(insn, regs); break; // jnz
-		case 0b010111: if (get_arg2(insn, regs) != 0) ip += get_arg1(insn, regs); break; // jnzo
+		case 0b010000:                                ip  = get_arg1(insn, regs)    ; break; // jmp
+		case 0b010010:                                ip += get_arg1(insn, regs) - 1; break; // jo
+		case 0b010001: if (get_arg2(insn, regs) == 0) ip  = get_arg1(insn, regs)    ; break; // jz
+		case 0b010011: if (get_arg2(insn, regs) == 0) ip += get_arg1(insn, regs) - 1; break; // jzo
+		case 0b010101: if (get_arg2(insn, regs) != 0) ip  = get_arg1(insn, regs)    ; break; // jnz
+		case 0b010111: if (get_arg2(insn, regs) != 0) ip += get_arg1(insn, regs) - 1; break; // jnzo
 		
 		case 0b110001: set_dest(insn, regs, (                  get_arg1(insn, regs)  ==                   get_arg2(insn, regs) ) ? 1 : 0); break; // cmpeq
 		case 0b111001: set_dest(insn, regs, (                  get_arg1(insn, regs)  !=                   get_arg2(insn, regs) ) ? 1 : 0); break; // cmpne
