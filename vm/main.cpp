@@ -8,6 +8,8 @@
 #include <vector>
 
 using Register = std::uint16_t;
+using SReg = std::uint16_t;
+using UReg = std::int16_t;
 using Registers = std::array<Register, 15>;
 using Instruction = std::uint32_t;
 using Instructions = std::vector<Instruction>;
@@ -87,7 +89,7 @@ int main(int argc, char **argv) {
 			          << std::hex << ip << ") is outside of the program array, stopping execution" << std::endl;
 			break;
 		}
-		const Instruction &insn = rom[ip++];
+		const Instruction &insn = rom[ip++]; // Note that the current instruction is at ip - 1
 		switch (insn & 0b111111) {
 		case 0b000001: set_dest(insn, regs, get_arg1(insn, regs) + get_arg2(insn, regs)); break; // add
 		case 0b000011: set_dest(insn, regs, get_arg1(insn, regs) - get_arg2(insn, regs)); break; // sub
@@ -96,8 +98,8 @@ int main(int argc, char **argv) {
 			Register tmp = get_arg2(insn, regs);
 			if (tmp) set_dest(insn, regs, get_arg1(insn, regs) / get_arg2(insn, regs));
 			else {
-				std::cout << "Division by zero at IP " << std::dec << ip << " (0x"
-				          << std::hex << ip << "): setting destination to 0" << std::endl;
+				std::cout << "Division by zero at IP " << std::dec << (ip - 1) << " (0x"
+				          << std::hex << (ip - 1) << "): setting destination to 0" << std::endl;
 				set_dest(insn, regs, 0);
 			}
 			break; } // div
@@ -105,8 +107,8 @@ int main(int argc, char **argv) {
 			Register tmp = get_arg2(insn, regs);
 			if (tmp) set_dest(insn, regs, get_arg1(insn, regs) % get_arg2(insn, regs));
 			else {
-				std::cout << "Division by zero at IP " << std::dec << ip << " (0x"
-				          << std::hex << ip << "): setting destination to 0" << std::endl;
+				std::cout << "Division by zero at IP " << std::dec << (ip - 1) << " (0x"
+				          << std::hex << (ip - 1) << "): setting destination to 0" << std::endl;
 				set_dest(insn, regs, 0);
 			}
 			break; } // mod
@@ -121,12 +123,12 @@ int main(int argc, char **argv) {
 		case 0b010101: if (get_arg2(insn, regs) != 0) ip  = get_arg1(insn, regs); break; // jnz
 		case 0b010111: if (get_arg2(insn, regs) != 0) ip += get_arg1(insn, regs); break; // jnzo
 		
-		case 0b110001: set_dest(insn, regs, (get_arg1(insn, regs) == get_arg2(insn, regs)) ? 1 : 0); break; // cmpeq
-		case 0b111001: set_dest(insn, regs, (get_arg1(insn, regs) != get_arg2(insn, regs)) ? 1 : 0); break; // cmpne
-		case 0b110011: set_dest(insn, regs, (get_arg1(insn, regs) <  get_arg2(insn, regs)) ? 1 : 0); break; // cmplt
-		case 0b111011: set_dest(insn, regs, (get_arg1(insn, regs) <= get_arg2(insn, regs)) ? 1 : 0); break; // cmple
-		case 0b110101: set_dest(insn, regs, (get_arg1(insn, regs) >  get_arg2(insn, regs)) ? 1 : 0); break; // cmpgt
-		case 0b111101: set_dest(insn, regs, (get_arg1(insn, regs) >= get_arg2(insn, regs)) ? 1 : 0); break; // cmpge
+		case 0b110001: set_dest(insn, regs, (                  get_arg1(insn, regs)  ==                   get_arg2(insn, regs) ) ? 1 : 0); break; // cmpeq
+		case 0b111001: set_dest(insn, regs, (                  get_arg1(insn, regs)  !=                   get_arg2(insn, regs) ) ? 1 : 0); break; // cmpne
+		case 0b110011: set_dest(insn, regs, (static_cast<SReg>(get_arg1(insn, regs)) <  static_cast<SReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmplt
+		case 0b111011: set_dest(insn, regs, (static_cast<SReg>(get_arg1(insn, regs)) >= static_cast<SReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpge
+		case 0b110111: set_dest(insn, regs, (static_cast<UReg>(get_arg1(insn, regs)) <  static_cast<UReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpab
+		case 0b111111: set_dest(insn, regs, (static_cast<UReg>(get_arg1(insn, regs)) >= static_cast<UReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpbe
 		
 		case 0b100000: set_dest(insn, regs, ram[get_arg1(insn, regs)]);  break; // load
 		case 0b100001: ram[get_arg1(insn, regs)] = get_arg2(insn, regs); break; // store
