@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
 		case 0b100001: ram[get_arg1(insn, regs)] = get_arg2(insn, regs); break; // store
 		
 		default:
-			std::cout << "IP " << std::dec << ip << " (0x" << std::hex << ip << ") has instruction "
+			std::cout << "IP " << std::dec << (ip - 1) << " (0x" << std::hex << (ip - 1) << ") has instruction "
 			          << insn << " (0b" << std::bitset<sizeof(Instruction) * 8>(insn) << "), which is invalid" << std::endl;
 			failed = true;
 			break;
@@ -145,6 +145,7 @@ int main(int argc, char **argv) {
 	for (std::uint8_t i = 0; i < regs.size() + 1; ++i) {
 		std::cout << "r" << std::setw(1) << std::dec << static_cast<unsigned>(i) << " = 0x" << std::setw(sizeof(Register) * 2) << std::hex << get_reg(regs, i) << "\n";
 	}
+	std::cout << "ip = 0x" << std::setw(sizeof(Register) * 2) << std::hex << ip << "\n";
 	// Unordered display
 	for (const auto &r : ram) {
 		std::cout << "RAM[" << std::setw(1) << std::dec << r.first << "] = 0x" << std::setw(sizeof(Register) * 2) << std::hex << r.second << "\n";
