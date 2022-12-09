@@ -37,7 +37,8 @@ Expression ::=
 "a statement"
 Statement ::=
   StmtMonJmp@op JmpArg@arg <MonadicJump>
-  StmtBinJmp@op JmpArg@left COMMA JmpArg@right <DiadicJump>
+  StmtBinJmp@op JmpArg@left COMMA Arg@right <DiadicJump>
+  StmtMonOp@op Arg@arg <Monadic>
   StmtBinOp@op Arg@left COMMA Arg@right <Diadic>;
 
 "an instruction code"
@@ -55,27 +56,32 @@ ExprBinOp ::=
   CMPLT <CmpLt>
   CMPLEQ <CmpLeq>
   CMPGT <CmpGt>
-  CMPGEQ <CmpGeq>;
+  CMPGEQ <CmpGeq>
+  CMPAB <CmpAb>
+  CMPBE <CmpBe>;
 
 "an instruction code"
 ExprMonOp ::=
   LOAD <Load>;
 
 "an instruction code"
+StmtMonOp ::=
+  JO <Jo>;
+
+"an instruction code"
 StmtBinOp ::=
-  STORE <Store>;
+  STORE <Store>
+  JZO <Jzo>
+  JNZO <Jnzo>;
 
 "an instruction code"
 StmtBinJmp ::=
   JZ <Jz>
-  JZO <Jzo>
-  JNZ <Jnz>
-  JNZO <Jnzo>;
+  JNZ <Jnz>;
 
 "an instruction code"
 StmtMonJmp ::=
-  JMP <Jmp>
-  JO <Jo>;
+  JMP <Jmp>;
 
 "an argument"
 Arg ::=
