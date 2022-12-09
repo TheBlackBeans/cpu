@@ -261,9 +261,7 @@ fn read_stmt_bin_jmp(ast: BeansAST) -> StmtBinOp {
     let mut node = node!(ast);
     match_variant! {(node) {
         "Jz" => StmtBinOp::Jz,
-    "Jzo" => StmtBinOp::Jzo,
     "Jnz" => StmtBinOp::Jnz,
-    "Jnzo" => StmtBinOp::Jnzo,
     }}
 }
 
@@ -271,6 +269,8 @@ fn read_stmt_bin_op(ast: BeansAST) -> StmtBinOp {
     let mut node = node!(ast);
     match_variant! {(node) {
     "Store" => StmtBinOp::Store,
+    "Jzo" => StmtBinOp::Jzo,
+    "Jnzo" => StmtBinOp::Jnzo,
     }}
 }
 

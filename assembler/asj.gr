@@ -70,14 +70,14 @@ StmtMonOp ::=
 
 "an instruction code"
 StmtBinOp ::=
-  STORE <Store>;
+  STORE <Store>
+  JZO <Jzo>
+  JNZO <Jnzo>;
 
 "an instruction code"
 StmtBinJmp ::=
   JZ <Jz>
-  JZO <Jzo>
-  JNZ <Jnz>
-  JNZO <Jnzo>;
+  JNZ <Jnz>;
 
 "an instruction code"
 StmtMonJmp ::=
