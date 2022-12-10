@@ -212,9 +212,11 @@ fn read_expr_bin_op(ast: BeansAST) -> (ExprBinOp, bool) {
     "CmpLt" => (ExprBinOp::CmpLt, false),
     "CmpLeq" => (ExprBinOp::CmpGeq, true),
     "CmpGt" => (ExprBinOp::CmpLt, true),
-	"CmpGeq" => (ExprBinOp::CmpGeq, false),
-	"CmpAb" => (ExprBinOp::CmpAb, false),
-	"CmpBe" => (ExprBinOp::CmpBe, false),
+    "CmpGeq" => (ExprBinOp::CmpGeq, false),
+    "CmpAb" => (ExprBinOp::CmpBel, true),
+    "CmpAe" => (ExprBinOp::CmpAeq, false),
+    "CmpBl" => (ExprBinOp::CmpBel, false),
+    "CmpBe" => (ExprBinOp::CmpAeq, true),
     }}
 }
 

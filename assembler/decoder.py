@@ -44,10 +44,10 @@ class InstructionType(enum.Enum):
 	
 	Cmpeq = 0b110001
 	Cmpne = 0b111001
-	Cmplt = 0b110011
-	Cmpge = 0b111011
-	Cmpab = 0b110111
-	Cmpbe = 0b111111
+	Cmpbl = 0b110011
+	Cmpae = 0b111011
+	Cmplt = 0b110111
+	Cmpge = 0b111111
 	
 	Load  = 0b100000
 	Store = 0b100001
@@ -95,10 +95,10 @@ instructionTypeMap = {
 	
 	InstructionType.Cmpeq: "cmpeq",
 	InstructionType.Cmpne: "cmpne",
+	InstructionType.Cmpbl: "cmpbl",
+	InstructionType.Cmpae: "cmpae",
 	InstructionType.Cmplt: "cmplt",
 	InstructionType.Cmpge: "cmpge",
-	InstructionType.Cmpab: "cmpab",
-	InstructionType.Cmpbe: "cmpbe",
 	
 	InstructionType.Load:  "load",
 	InstructionType.Store: "store",

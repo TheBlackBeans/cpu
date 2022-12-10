@@ -58,6 +58,8 @@ ExprBinOp ::=
   CMPGT <CmpGt>
   CMPGEQ <CmpGeq>
   CMPAB <CmpAb>
+  CMPAE <CmpAe>
+  CMPBL <CmpBl>
   CMPBE <CmpBe>;
 
 "an instruction code"
