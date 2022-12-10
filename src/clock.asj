@@ -6,17 +6,34 @@
 ; r5 -- # days (unsigned)
 ; r6 -- # month (unsigned)
 ; r7 -- # year (signed?)
+; r8 -- scratch
+; r11 -- # days in February of the current year: r11 = 29 iff r14 = 4 and r13 < 25 or r12 = 4, r11 = 28 otherwise
+; r12 -- # 100-years until r7 = 0 mod 400 (excluding current)
+; r13 -- # 4-years until r7 = 0 mod 100 (excluding current)
+; r14 -- # years until r7 = 0 mod 4 (excluding current)
 ; r15 -- # days in the current month
-; r8-r14 -- scratch
 
 ; 0: -- separation to count the correct number of cycles spent
+
+; out/vm -f out/clock -n <ncycles> -r <r1> <r2> <r3> <r4> <r5> <r6> <r7> <r8> 0 0 <r11> <r12> <r13> <r14> <r15> <ip> -q --ifmt "%x%r1 %r2 %r3 %r4 %r5 %r6 %r7 %r8 %r11 %r12 %r13 %r14 %r15 %ip | %insn"$'\n'
+; Seconds transition: 999 0 0 0 0 0 0 0 0 0 0x1d 4 0x19 4 0x1f 6
+; After 1000*60*60*24*31 + 20 cycles: 0x0014 0x0000 0x0000 0x0000 0x001f 0x0000 0x0000 0x0001 0x0000 0x0000 0x001d 0x0004 0x0019 0x0004 0x001f 0x001c
+
 _init:
 	; TODO: read the current time from some I/O here
 
 	r15 = add r0, 31 ; January -> 31 days
 	
+	r14 = add r0, 1  ; Year -1: -1 mod 4, -1 mod 100, -1 mod 400 -> store 4-3=1, 25-24=1, 4-3=1
+	r13 = add r0, 1
+	r12 = add r0, 1
+	
+	r1 = add r0, (start - _init) + (_compute_r14_end - compute_r14)
+	jmp compute_r14  ; Increase the virtual year: year 0: 0 mod 4, 0 mod 100, 0 mod 400 -> will store 4, 25, 4
+	
+0:
 start:
-	r1 = add r1, 0f - start
+	r1 = add r1, 0f - 0b
 	r8 = cmpae r1, 1000           ; N. cycles per second present here
 	jz start, r8
 	
@@ -84,27 +101,7 @@ start:
 2:
 	; Check for leap days
 	r1 = add r1, 0f - 0b
-	r8 = and r7, 3 ; mod r6, 4
-	jz 2f, r8
-0:
-3: ; Not 0 mod 4, or 0 mod 100 and not 0 mod 400
-	r1 = add r1, 0f - 0b
-	r15 = add r0, 28
-	jmp start
-0:
-2:
-	r1 = add r1, 0f - 0b
-	r8 = mod r7, 100
-	jnz 4f, r8
-0:
-	; 0 mod 100
-	r1 = add r1, 0f - 0b
-	r8 = mod r7, 400
-	jnz 3b, r8
-0:
-4: ; 0 mod 4, and not 0 mod 100 or 0 mod 400
-	r1 = add r1, 0f - 0b
-	r15 = add r0, 29
+	r8 = and r0, r11
 	jmp start
 0:
 1:
@@ -113,6 +110,32 @@ start:
 	r6 = sub r6, 12
 	r15 = add r0, 31 ; Reset the number of days in a month as well
 	r7 = add r7, 1
+compute_r14:
+	; Now compute the number of days in February
+	r14 = sub r14, 1
+	jnz not_bis, r14
+_compute_r14_end:
+0:
+	r1 = add r1, 0f - 0b
+	r14 = add r0, 4
+	r13 = sub r13, 1
+	jnz bis, r13
+0:
+	r1 = add r1, 0f - 0b
+	r13 = add r0, 25
+	r12 = sub r12, 1
+	jnz not_bis, r12
+0:
+	r1 = add r1, 0f - 0b
+	r12 = add r12, 4
+0:
+bis:
+	r1 = add r1, 0f - 0b
+	r11 = add r0, 29
 	jmp start
-
+0:
+not_bis:
+	r1 = add r1, 0f - 0b
+	r11 = add r0, 28
+	jmp start
 0: ; End of file
