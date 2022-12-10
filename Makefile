@@ -93,7 +93,7 @@ assembler/%.clx: assembler/%.lx
 assembler/%.cgr: assembler/%.gr assembler/%.clx
 	beans compile parser --lexer $(word 2,$^) $<
 
-check/asj:
+check/asj: $(ASSEMBLER_SOURCES)
 	cargo clippy
 .PHONY: check/asj
 
