@@ -1,11 +1,15 @@
 #include <bitset>
+#include <chrono>
 #include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <thread>
 
 #include "instruction.hpp"
+
+using used_clock = std::chrono::steady_clock;
 
 void set_dest(Instruction insn, Registers &regs, Register val) {
 	return set_reg(regs, (insn >> 8) & 0xF, val);
@@ -31,6 +35,7 @@ void help(const char *arg0) {
 	std::cout << "Usage: " << arg0 << "\n"
 	             "  * -f      --file <filename>                Binary blob filename\n"
 	             "  * -n      --ncycles <n>                    Number of clock cycles to execute\n"
+	             "    -F      --freq <n>                       Limit on the frequency of the clock, in Hertz (must be at least 1)\n"
 	             "    -h      --help                           Display this help\n"
 	             "    -q      --no-init-msg                    Don't display the \"Read .. instructions\" message\n"
 	             "    -r      --init-regs <r1> ... <r15> <ip>  Set the initial register values\n"
@@ -139,8 +144,10 @@ int main(int argc, char **argv) {
 	Register ip = 0;
 	RAM ram;
 	
-	bool init_regs = false, show_initialized = true;
 	unsigned long long maxiter = static_cast<unsigned long long>(-1);
+	used_clock::duration wait_delay = used_clock::duration(0);
+	
+	bool init_regs = false, show_initialized = true;
 	const char *filename = nullptr;
 	const char *format = nullptr, *iformat = nullptr;
 	for (int i = 1; i < argc; ++i) {
@@ -163,7 +170,7 @@ int main(int argc, char **argv) {
 				for (std::size_t j = 0; j < regs.size(); ++j) {
 					char *endp = nullptr;
 					unsigned long long val = std::strtoull(argv[i + 1 + j], &endp, 0);
-					if (!endp || (*endp) || (val >= (1 << 8) << sizeof(regs[j]))) {
+					if (!endp || *endp || (val >= (1 << 8) << sizeof(regs[j]))) {
 						std::cout << "Invalid value for register r" << (j + 1) << " given\n\n";
 						help(argv[0]);
 						return 1;
@@ -172,7 +179,7 @@ int main(int argc, char **argv) {
 				}
 				char *endp = nullptr;
 				unsigned long long val = std::strtoull(argv[i + 1 + regs.size()], &endp, 0);
-				if (!endp || (*endp) || (val >= (1 << 8) << sizeof(ip))) {
+				if (!endp || *endp || (val >= (1 << 8) << sizeof(ip))) {
 					std::cout << "Invalid value for register ip given\n\n";
 					help(argv[0]);
 					return 1;
@@ -193,7 +200,7 @@ int main(int argc, char **argv) {
 			} else {
 				char *endp = nullptr;
 				maxiter = std::strtoull(argv[i + 1], &endp, 0);
-				if (!endp || (*endp)) {
+				if (!endp || *endp) {
 					std::cout << "Invalid number of cycles given\n\n";
 					help(argv[0]);
 					return 1;
@@ -211,6 +218,35 @@ int main(int argc, char **argv) {
 				return 1;
 			} else {
 				filename = argv[i + 1];
+				++i;
+			}
+		} else if (!strcmp(argv[i], "-F") || !strcmp(argv[i], "--freq")) {
+			if (argc <= i + 1) {
+				std::cout << "No frequency given\n\n";
+				help(argv[0]);
+				return 1;
+			} else if (wait_delay.count() != 0) {
+				std::cout << "Clock frequency already given\n\n";
+				help(argv[0]);
+				return 1;
+			} else {
+				char *endp = nullptr;
+				unsigned long long fq = std::strtoull(argv[i + 1], &endp, 0);
+				if (!endp || *endp || !fq) {
+					std::cout << "Invalid clock frequency given\n\n";
+					help(argv[0]);
+					return 1;
+				}
+				wait_delay = used_clock::duration(used_clock::duration::period::den / (fq * used_clock::duration::period::num));
+				if (!wait_delay.count()) {
+					wait_delay = used_clock::duration(1);
+				}
+				if (used_clock::duration::period::den % (fq * used_clock::duration::period::num)) {
+					std::cout << "Warning: cannot have the requested frequency; a frequency of approximately "
+					          << static_cast<long double>(used_clock::duration::period::den)
+					               / (wait_delay.count() * used_clock::duration::period::num)
+					               - fq << " Hz has been added to it." << std::endl;
+				}
 				++i;
 			}
 		} else if (!strcmp(argv[i], "--fmt") || !strcmp(argv[i], "--format")) {
@@ -279,8 +315,12 @@ int main(int argc, char **argv) {
 	if (show_initialized) std::cout << "Read " /* << std::dec */ << rom.size() << " instructions" << std::endl;
 	
 	bool failed = false;
+	used_clock::time_point wait_end_time = used_clock::now();
 	for (unsigned long long niter = 0; (niter < maxiter) && !failed; ++niter) {
 		if (iformat) display_formatted(iformat, regs, ip, rom, ram);
+		
+		wait_end_time += wait_delay;
+		std::this_thread::sleep_until(wait_end_time);
 		
 		if (ip >= rom.size()) {
 			std::cout << "IP " << std::dec << ip << " (0x"
