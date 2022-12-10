@@ -9,7 +9,7 @@ COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 all: build doc
 .PHONY: all
 
-build: out/cpu out/vm out/asj
+build: out/cpu out/vm out/asj out/clock
 .PHONY: build
 
 doc: out/instructionset.pdf
@@ -18,7 +18,7 @@ doc: out/instructionset.pdf
 check: check/cpu check/vm check/asj
 .PHONY: check
 
-test: test/cpu test/vm test/asj
+test: test/cpu test/vm test/asj test/clock
 .PHONY: test
 
 run: out/cpu
@@ -56,6 +56,21 @@ test/cpu: check/cpu
 	@echo "Running CPU tests"
 	@tests/run_tests.sh
 .PHONY: test/cpu
+
+# Program
+PROGRAM_SOURCE := src/clock.asj
+
+out/clock: $(PROGRAM_SOURCE) out/asj
+	@echo "Compiling the clock program"
+	@out/asj $(PROGRAM_SOURCE) -o $@
+
+check/clock:
+	@echo "Checking is made by compiling the program"
+.PHONY: check/clock
+
+test/clock:
+	@echo "No clock program test available"
+.PHONY: test/clock
 
 # VM-relevant stuff
 VM_SOURCES := vm/main.cpp

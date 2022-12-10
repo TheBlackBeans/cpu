@@ -1,0 +1,118 @@
+; r0 -- 0
+; r1 -- # of clock cycles (unsigned)
+; r2 -- # seconds (unsigned)
+; r3 -- # minutes (unsigned)
+; r4 -- # hours (unsigned)
+; r5 -- # days (unsigned)
+; r6 -- # month (unsigned)
+; r7 -- # year (signed?)
+; r15 -- # days in the current month
+; r8-r14 -- scratch
+
+; 0: -- separation to count the correct number of cycles spent
+_init:
+	; TODO: read the current time from some I/O here
+
+	r15 = add r0, 31 ; January -> 31 days
+	
+start:
+	r1 = add r1, 0f - start
+	r8 = cmpae r1, 1000           ; N. cycles per second present here
+	jz start, r8
+	
+0:
+	; We have passed 1000 cycle
+	r1 = sub r1, 1000 - (0f - 0b) ; N. cycles per second present here
+	r2 = add r2, 1
+	r8 = cmpae r2, 60
+	jz start, r8
+	
+0:
+	; We have passed 60 second
+	r1 = add r1, 0f - 0b
+	r2 = sub r2, 60
+	r3 = add r3, 1
+	r8 = cmpae r3, 60
+	jz start, r8
+	
+0:
+	; We have passed 60 minutes
+	r1 = add r1, 0f - 0b
+	r3 = sub r3, 60
+	r4 = add r4, 1
+	r8 = cmpae r4, 24
+	jz start, r8
+	
+0:
+	; We have passed 24 hours
+	r1 = add r1, 0f - 0b
+	r4 = sub r4, 24
+	r5 = add r5, 1
+	r8 = cmpae r5, r15
+	jz start, r8
+	
+0:
+	; We have passed <r15> days
+	r1 = add r1, 0f - 0b
+	r5 = sub r5, r15
+	r6 = add r6, 1
+	r8 = cmpae r6, 12 ; Dec -> Jan
+	jnz 1f, r8
+0:
+	r1 = add r1, 0f - 0b
+	r8 = cmpbe r6, 2 ; Jan -> Feb or Feb -> Mar
+	jnz 2f, r8
+0:
+	r1 = add r1, 0f - 0b
+	r8 = cmpeq r6, 7 ; Jul -> Aug
+	jnz start, r8
+0:
+	r1 = add r1, 0f - 0b
+	r15 = sub 31 + 30, r15 ; Mar -> Apr, Apr -> May, May -> Jun, Jun -> Jul, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
+	jmp start
+0:
+2:
+	r1 = add r1, 0f - 0b
+	r8 = cmpeq r6, 1 ; Jan -> Feb
+	jnz 2f, r8
+0:
+	; Feb -> Mar
+	r1 = add r1, 0f - 0b
+	r15 = add r0, 31
+	jmp start
+0:
+2:
+	; Check for leap days
+	r1 = add r1, 0f - 0b
+	r8 = and r7, 3 ; mod r6, 4
+	jz 2f, r8
+0:
+3: ; Not 0 mod 4, or 0 mod 100 and not 0 mod 400
+	r1 = add r1, 0f - 0b
+	r15 = add r0, 28
+	jmp start
+0:
+2:
+	r1 = add r1, 0f - 0b
+	r8 = mod r7, 100
+	jnz 4f, r8
+0:
+	; 0 mod 100
+	r1 = add r1, 0f - 0b
+	r8 = mod r7, 400
+	jnz 3b, r8
+0:
+4: ; 0 mod 4, and not 0 mod 100 or 0 mod 400
+	r1 = add r1, 0f - 0b
+	r15 = add r0, 29
+	jmp start
+0:
+1:
+	; We have passed 12 months
+	r1 = add r1, 0f - 0b
+	r6 = sub r6, 12
+	r15 = add r0, 31 ; Reset the number of days in a month as well
+	r7 = add r7, 1
+	jmp start
+
+0: ; End of file
