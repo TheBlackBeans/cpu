@@ -141,12 +141,10 @@ static_assert(sizeof(Register) == sizeof(UReg), "Unsigned register and register 
 using Registers = std::array<Register, 15>;
 
 constexpr Register get_reg(const Registers &regs, std::uint8_t idx) {
-// std::cout << "Getting " << static_cast<unsigned>(idx) << "\n";
 	if (idx) return regs[idx - 1];
 	else return 0;
 }
 inline void set_reg(Registers &regs, std::uint8_t idx, Register val) {
-// std::cout << "Setting " << static_cast<unsigned>(idx) << " to " << val << "\n";
 	if (idx) regs[idx - 1] = val;
 }
 

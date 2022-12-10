@@ -15,7 +15,6 @@ void set_dest(Instruction insn, Registers &regs, Register val) {
 	return set_reg(regs, (insn >> 8) & 0xF, val);
 }
 Register get_arg1(Instruction insn, Registers &regs) {
-// std::cout << "Getting arg1: " << insn << "\n";
 	if (insn & 0b01000000) {
 		return get_reg(regs, (insn >> 12) & 0xF);
 	} else {
@@ -23,7 +22,6 @@ Register get_arg1(Instruction insn, Registers &regs) {
 	}
 }
 Register get_arg2(Instruction insn, Registers &regs) {
-// std::cout << "Getting arg2: " << insn << "\n";
 	if (insn & 0b10000000) {
 		return get_reg(regs, (insn >> 28) & 0xF);
 	} else {
@@ -300,9 +298,7 @@ int main(int argc, char **argv) {
 	char inp[sizeof(Instruction)];
 	while (f.read(inp, sizeof(Instruction))) {
 		rom.emplace_back(*reinterpret_cast<std::int32_t*>(&inp)); // type punning
-// std::cout << "Instruction: " << std::setw(8) << std::setfill('0') << std::hex << rom.back() << "\n";
 	}
-// std::cout << std::dec;
 	f.close();
 	
 	if (!format) {
@@ -312,7 +308,7 @@ int main(int argc, char **argv) {
 			"ip  = %ip\n%ram";
 	}
 	
-	if (show_initialized) std::cout << "Read " /* << std::dec */ << rom.size() << " instructions" << std::endl;
+	if (show_initialized) std::cout << "Read " << std::dec << rom.size() << " instructions" << std::endl;
 	
 	bool failed = false;
 	used_clock::time_point wait_end_time = used_clock::now();
