@@ -1,29 +1,11 @@
-#include <array>
 #include <bitset>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <unordered_map>
-#include <vector>
 
-using Register = std::uint16_t;
-using SReg = std::uint16_t;
-using UReg = std::int16_t;
-using Registers = std::array<Register, 15>;
-using Instruction = std::uint32_t;
-using Instructions = std::vector<Instruction>;
-using RAM = std::unordered_map<Register, Instruction>;
-
-Register get_reg(Registers &regs, std::uint8_t idx) {
-// std::cout << "Getting " << static_cast<unsigned>(idx) << "\n";
-	if (idx) return regs[idx - 1];
-	else return 0;
-}
-void set_reg(Registers &regs, std::uint8_t idx, Register val) {
-// std::cout << "Setting " << static_cast<unsigned>(idx) << " to " << val << "\n";
-	if (idx) regs[idx - 1] = val;
-}
+#include "instruction.hpp"
 
 void set_dest(Instruction insn, Registers &regs, Register val) {
 	return set_reg(regs, (insn >> 8) & 0xF, val);
@@ -47,12 +29,13 @@ Register get_arg2(Instruction insn, Registers &regs) {
 
 void help(const char *arg0) {
 	std::cout << "Usage: " << arg0 << "\n"
-	             "  * -f     --file <filename>                Binary blob filename\n"
-	             "  * -n     --ncycles <n>                    Number of clock cycles to execute\n"
-	             "    -h     --help                           Display this help\n"
-	             "    -q     --no-init-msg                    Don't display the \"Read .. instructions\" message\n"
-	             "    -r     --init-regs <r1> ... <r15> <ip>  Set the initial register values\n"
-	             "    --fmt  --format <fmt>                   Set the exit string format\n"
+	             "  * -f      --file <filename>                Binary blob filename\n"
+	             "  * -n      --ncycles <n>                    Number of clock cycles to execute\n"
+	             "    -h      --help                           Display this help\n"
+	             "    -q      --no-init-msg                    Don't display the \"Read .. instructions\" message\n"
+	             "    -r      --init-regs <r1> ... <r15> <ip>  Set the initial register values\n"
+	             "    --ifmt  --instruction-format <fmt>       Set the per-instruction and exit string format\n"
+	             "    --fmt   --format <fmt>                   Set the exit string format\n"
 	             "\n"
 	             "Option marked with a * are mandatory.\n"
 	             "\n"
@@ -77,8 +60,73 @@ void help(const char *arg0) {
 	             "%r14   Replaced by the value of register r14\n"
 	             "%r15   Replaced by the value of register r15\n"
 	             "%ip    Replaced by the value of register ip\n"
-	             "%insn  Replaced by the binary representation of the current instruction\n"
-	             "%ram   Replaced by a list of \"RAM[<key>] = <value>\" pairs (the key being always written in hexadecimal form)" << std::endl;
+	             "%insn  Replaced by the binary representation of the current instruction, followed by a disassembly of it\n"
+	             "%ram   Replaced by a list of \"RAM[<key>] = <value>\" pairs (the key being always written in hexadecimal form)\n"
+	             "\n"
+	             "If both --ifmt and --fmt are provided, the format string given by --fmt takes precedence as the exit string." << std::endl;
+}
+
+void display_formatted(const char *fmt, const Registers &regs, const Register &ip, const Instructions &insns, const RAM &ram) {
+	std::cout << std::setfill('0');
+	bool show_bin = false, show_hex = false;
+	
+	for (std::size_t i = 0; fmt[i]; ++i) {
+		if (fmt[i] == '%') {
+#define TEST(s) !strncmp(fmt + i + 1, #s, std::strlen(#s))
+#define SHOW_VAL(v) do { \
+	if (show_bin) std::cout << "0b" << std::bitset<sizeof(v) * 8>(v); \
+	else if (show_hex) std::cout << "0x" << std::hex << std::setw(sizeof(v) * 2) << v; \
+	else std::cout << std::dec << std::setw(1) << v; \
+} while (false)
+			if (TEST(b)) {
+				show_bin = true;
+				++i;
+			} else if (TEST(d)) {
+				show_hex = show_bin = false;
+				++i;
+			} else if (TEST(x)) {
+				show_bin = false; show_hex = true;
+				++i;
+#define OUTPUT(n) SHOW_VAL(get_reg(regs, n))
+			} else if (TEST(r0)) { OUTPUT(0); i += 2; }
+			else if (TEST(r10)) { OUTPUT(10); i += 3; }
+			else if (TEST(r11)) { OUTPUT(11); i += 3; }
+			else if (TEST(r12)) { OUTPUT(12); i += 3; }
+			else if (TEST(r13)) { OUTPUT(13); i += 3; }
+			else if (TEST(r14)) { OUTPUT(14); i += 3; }
+			else if (TEST(r15)) { OUTPUT(15); i += 3; }
+			else if (TEST(r1))  { OUTPUT(1);  i += 2; }
+			else if (TEST(r2))  { OUTPUT(2);  i += 2; }
+			else if (TEST(r3))  { OUTPUT(3);  i += 2; }
+			else if (TEST(r4))  { OUTPUT(4);  i += 2; }
+			else if (TEST(r5))  { OUTPUT(5);  i += 2; }
+			else if (TEST(r6))  { OUTPUT(6);  i += 2; }
+			else if (TEST(r7))  { OUTPUT(7);  i += 2; }
+			else if (TEST(r8))  { OUTPUT(8);  i += 2; }
+			else if (TEST(r9))  { OUTPUT(9);  i += 2; }
+#undef OUTPUT
+			else if (TEST(ip)) { SHOW_VAL(ip); i += 2; }
+			else if (TEST(insn)) {
+				std::cout << std::bitset<sizeof(Instruction) * 8>(insns[ip]) << " | " << std::dec << DecodedInstruction(insns[ip]);
+				i += 4;
+			}
+			else if (TEST(ram)) {
+				// Unordered display
+				for (const auto &r : ram) {
+					std::cout << "RAM[" << std::setw(1) << std::dec << r.first << "] = ";
+					SHOW_VAL(r.second);
+					std::cout << "\n";
+				}
+				i += 3;
+#undef TEST
+#undef SHOW_VAL
+			} else {
+				std::cout << fmt[i];
+			}
+		} else {
+			std::cout << fmt[i];
+		}
+	}
 }
 
 int main(int argc, char **argv) {
@@ -94,7 +142,7 @@ int main(int argc, char **argv) {
 	bool init_regs = false, show_initialized = true;
 	unsigned long long maxiter = static_cast<unsigned long long>(-1);
 	const char *filename = nullptr;
-	const char *format = nullptr;
+	const char *format = nullptr, *iformat = nullptr;
 	for (int i = 1; i < argc; ++i) {
 		if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 			help(argv[0]);
@@ -170,12 +218,26 @@ int main(int argc, char **argv) {
 				std::cout << "No format given\n\n";
 				help(argv[0]);
 				return 1;
-			} else if (format) {
+			} else if (format && (format != iformat)) {
 				std::cout << "Format already given\n\n";
 				help(argv[0]);
 				return 1;
 			} else {
 				format = argv[i + 1];
+				++i;
+			}
+		} else if (!strcmp(argv[i], "--ifmt") || !strcmp(argv[i], "--instruction-format")) {
+			if (argc <= i + 1) {
+				std::cout << "No per-instruction format given\n\n";
+				help(argv[0]);
+				return 1;
+			} else if (iformat) {
+				std::cout << "Per-instruction format already given\n\n";
+				help(argv[0]);
+				return 1;
+			} else {
+				iformat = argv[i + 1];
+				if (!format) format = iformat;
 				++i;
 			}
 		}
@@ -218,6 +280,8 @@ int main(int argc, char **argv) {
 	
 	bool failed = false;
 	for (unsigned long long niter = 0; (niter < maxiter) && !failed; ++niter) {
+		if (iformat) display_formatted(iformat, regs, ip, rom, ram);
+		
 		if (ip >= rom.size()) {
 			std::cout << "IP " << std::dec << ip << " (0x"
 			          << std::hex << ip << ") is outside of the program array, stopping execution" << std::endl;
@@ -275,62 +339,7 @@ int main(int argc, char **argv) {
 		}
 	}
 	
-	std::cout << std::setfill('0');
-	bool show_bin = false, show_hex = false;
-	for (std::size_t i = 0; format[i]; ++i) {
-		if (format[i] == '%') {
-#define TEST(s) !strncmp(format + i + 1, #s, std::strlen(#s))
-#define SHOW_VAL(v) do { \
-	if (show_bin) std::cout << "0b" << std::bitset<sizeof(v) * 8>(v); \
-	else if (show_hex) std::cout << "0x" << std::hex << std::setw(sizeof(v) * 2) << v; \
-	else std::cout << std::dec << std::setw(1) << v; \
-} while (false)
-#define OUTPUT(n) SHOW_VAL(get_reg(regs, n))
-			if (TEST(b)) {
-				show_bin = true;
-				++i;
-			} else if (TEST(d)) {
-				show_hex = show_bin = false;
-				++i;
-			} else if (TEST(x)) {
-				show_bin = false; show_hex = true;
-				++i;
-			} else if (TEST(r0)) { OUTPUT(0); i += 2; }
-			else if (TEST(r10)) { OUTPUT(10); i += 3; }
-			else if (TEST(r11)) { OUTPUT(11); i += 3; }
-			else if (TEST(r12)) { OUTPUT(12); i += 3; }
-			else if (TEST(r13)) { OUTPUT(13); i += 3; }
-			else if (TEST(r14)) { OUTPUT(14); i += 3; }
-			else if (TEST(r15)) { OUTPUT(15); i += 3; }
-			else if (TEST(r1))  { OUTPUT(1);  i += 2; }
-			else if (TEST(r2))  { OUTPUT(2);  i += 2; }
-			else if (TEST(r3))  { OUTPUT(3);  i += 2; }
-			else if (TEST(r4))  { OUTPUT(4);  i += 2; }
-			else if (TEST(r5))  { OUTPUT(5);  i += 2; }
-			else if (TEST(r6))  { OUTPUT(6);  i += 2; }
-			else if (TEST(r7))  { OUTPUT(7);  i += 2; }
-			else if (TEST(r8))  { OUTPUT(8);  i += 2; }
-			else if (TEST(r9))  { OUTPUT(9);  i += 2; }
-			else if (TEST(ip)) { SHOW_VAL(ip); i += 2; }
-			else if (TEST(insn)) {
-				std::cout << std::bitset<sizeof(Instruction) * 8>(rom[ip]);
-				i += 4;
-			}
-			else if (TEST(ram)) {
-				// Unordered display
-				for (const auto &r : ram) {
-					std::cout << "RAM[" << std::setw(1) << std::dec << r.first << "] = ";
-					SHOW_VAL(r.second);
-					std::cout << "\n";
-				}
-				i += 3;
-			} else {
-				std::cout << format[i];
-			}
-		} else {
-			std::cout << format[i];
-		}
-	}
+	display_formatted(format, regs, ip, rom, ram);
 	std::cout << std::flush;
 	
 	return 0;

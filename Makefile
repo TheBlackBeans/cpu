@@ -59,10 +59,11 @@ test/cpu: check/cpu
 
 # VM-relevant stuff
 VM_SOURCES := vm/main.cpp
+VM_HEADERS := vm/instruction.hpp
 
-out/vm: $(VM_SOURCES) | out
+out/vm: $(VM_SOURCES) $(VM_HEADERS) | out
 	@echo "Compiling the VM"
-	@$(CXX) $(CXXFLAGS) -g -O2 -Wall -Wextra -o $@ $^
+	@$(CXX) $(CXXFLAGS) -g -O2 -Wall -Wextra -o $@ $(VM_SOURCES)
 
 check/vm:
 	@echo "No VM check"
