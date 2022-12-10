@@ -99,9 +99,9 @@ start:
 	jmp start
 0:
 2:
-	; Check for leap days
+	; Jan -> Feb
 	r1 = add r1, 0f - 0b
-	r8 = and r0, r11
+	r15 = add r0, r11
 	jmp start
 0:
 1:
