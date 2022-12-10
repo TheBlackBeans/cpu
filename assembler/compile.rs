@@ -126,9 +126,9 @@ impl Labels {
 
     fn get_label(&self, label: &LabelImmediate) -> Option<usize> {
         match label {
-        LabelImmediate::Global(label) => self.get_global(label.clone()),
-        LabelImmediate::Forward(label) => self.get_forward(*label),
-        LabelImmediate::Backward(label) => self.get_backward(*label),
+            LabelImmediate::Global(label) => self.get_global(label.clone()),
+            LabelImmediate::Forward(label) => self.get_forward(*label),
+            LabelImmediate::Backward(label) => self.get_backward(*label),
         }
     }
 
@@ -137,12 +137,20 @@ impl Labels {
             Immediate::Literal(imm) => *imm as u32,
             Immediate::LabelDifference(lab1, lab2) => {
                 (self.get_label(lab1)? - self.get_label(lab2)?) as u32
-            },
+            }
             Immediate::Label(label) => self.get_label(label)? as u32,
-            Immediate::Add(imm1, imm2) => self.resolve_immediate(imm1)? + self.resolve_immediate(imm2)?,
-            Immediate::Sub(imm1, imm2) => self.resolve_immediate(imm1)? - self.resolve_immediate(imm2)?,
-            Immediate::Mul(imm1, imm2) => self.resolve_immediate(imm1)? * self.resolve_immediate(imm2)?,
-            Immediate::Div(imm1, imm2) => self.resolve_immediate(imm1)? / self.resolve_immediate(imm2)?,
+            Immediate::Add(imm1, imm2) => {
+                self.resolve_immediate(imm1)? + self.resolve_immediate(imm2)?
+            }
+            Immediate::Sub(imm1, imm2) => {
+                self.resolve_immediate(imm1)? - self.resolve_immediate(imm2)?
+            }
+            Immediate::Mul(imm1, imm2) => {
+                self.resolve_immediate(imm1)? * self.resolve_immediate(imm2)?
+            }
+            Immediate::Div(imm1, imm2) => {
+                self.resolve_immediate(imm1)? / self.resolve_immediate(imm2)?
+            }
         })
     }
 }

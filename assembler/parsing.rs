@@ -176,7 +176,7 @@ fn read_jmp_arg(ast: BeansAST) -> Result<Arg> {
 
 fn read_jmp_label(ast: BeansAST) -> Result<LabelImmediate> {
     let mut node = node!(ast);
-    Ok (match_variant! {(node) {
+    Ok(match_variant! {(node) {
     "Global" => LabelImmediate::Global(value!(node)),
     "Forward" => LabelImmediate::Forward(value!(node).parse()?),
     "Backward" => LabelImmediate::Backward(value!(node).parse()?),
