@@ -45,31 +45,158 @@ Register get_arg2(Instruction insn, Registers &regs) {
 	}
 }
 
+void help(const char *arg0) {
+	std::cout << "Usage: " << arg0 << "\n"
+	             "  * -f     --file <filename>                Binary blob filename\n"
+	             "  * -n     --ncycles <n>                    Number of clock cycles to execute\n"
+	             "    -h     --help                           Display this help\n"
+	             "    -q     --no-init-msg                    Don't display the \"Read .. instructions\" message\n"
+	             "    -r     --init-regs <r1> ... <r15> <ip>  Set the initial register values\n"
+	             "    --fmt  --format <fmt>                   Set the exit string format\n"
+	             "\n"
+	             "Option marked with a * are mandatory.\n"
+	             "\n"
+	             "The format string is copied byte per byte, unless one of the following string is matched, in which case it is substituted:\n"
+	             "%b     Write the next values in binary form\n"
+	             "%d     Write the next values in decimal form\n"
+	             "%x     Write the next values in hexadecimal form\n"
+	             "%r0    Replaced by the value of register r0\n"
+	             "%r1    Replaced by the value of register r1\n"
+	             "%r2    Replaced by the value of register r2\n"
+	             "%r3    Replaced by the value of register r3\n"
+	             "%r4    Replaced by the value of register r4\n"
+	             "%r5    Replaced by the value of register r5\n"
+	             "%r6    Replaced by the value of register r6\n"
+	             "%r7    Replaced by the value of register r7\n"
+	             "%r8    Replaced by the value of register r8\n"
+	             "%r9    Replaced by the value of register r9\n"
+	             "%r10   Replaced by the value of register r10\n"
+	             "%r11   Replaced by the value of register r11\n"
+	             "%r12   Replaced by the value of register r12\n"
+	             "%r13   Replaced by the value of register r13\n"
+	             "%r14   Replaced by the value of register r14\n"
+	             "%r15   Replaced by the value of register r15\n"
+	             "%ip    Replaced by the value of register ip\n"
+	             "%insn  Replaced by the binary representation of the current instruction\n"
+	             "%ram   Replaced by a list of \"RAM[<key>] = <value>\" pairs (the key being always written in hexadecimal form)" << std::endl;
+}
+
 int main(int argc, char **argv) {
-	if (argc != 3) {
-		std::cout << "Usage: " << argv[0] << " <binary blob> <n. executions>" << std::endl;
-		return (argc == 0) ? 0 : 1;
-	}
-	if (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")) {
-		std::cout << "Usage: " << argv[0] << " <binary blob> <n. executions>" << std::endl;
+	if (argc == 1) {
+		help(argv[0]);
 		return 0;
-	}
-	
-	char *endp = nullptr;
-	unsigned long long maxiter = std::strtoull(argv[2], &endp, 0);
-	if (*endp) {
-		std::cout << "Usage: " << argv[0] << " <binary blob> <n. executions>" << std::endl;
-		return 1;
 	}
 	
 	Registers regs = {0};
 	Register ip = 0;
-	Instructions rom;
 	RAM ram;
 	
-	std::fstream f{ argv[1], std::ios_base::in | std::ios_base::binary };
+	bool init_regs = false, show_initialized = true;
+	unsigned long long maxiter = static_cast<unsigned long long>(-1);
+	const char *filename = nullptr;
+	const char *format = nullptr;
+	for (int i = 1; i < argc; ++i) {
+		if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			help(argv[0]);
+			return 0;
+		} else if (!strcmp(argv[i], "-q") || !strcmp(argv[i], "--no-init-msg")) {
+			show_initialized = false;
+		} else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--init-regs")) {
+			if (argc <= i + static_cast<int>(regs.size()) + 1) {
+				std::cout << "Not enough values given\n\n";
+				help(argv[0]);
+				return 1;
+			} else if (init_regs) {
+				std::cout << "Registers already initialized\n\n";
+				help(argv[0]);
+				return 1;
+			} else {
+				init_regs = true;
+				for (std::size_t j = 0; j < regs.size(); ++j) {
+					char *endp = nullptr;
+					unsigned long long val = std::strtoull(argv[i + 1 + j], &endp, 0);
+					if (!endp || (*endp) || (val >= (1 << 8) << sizeof(regs[j]))) {
+						std::cout << "Invalid value for register r" << (j + 1) << " given\n\n";
+						help(argv[0]);
+						return 1;
+					}
+					regs[j] = static_cast<Register>(val);
+				}
+				char *endp = nullptr;
+				unsigned long long val = std::strtoull(argv[i + 1 + regs.size()], &endp, 0);
+				if (!endp || (*endp) || (val >= (1 << 8) << sizeof(ip))) {
+					std::cout << "Invalid value for register ip given\n\n";
+					help(argv[0]);
+					return 1;
+				}
+				ip = static_cast<Register>(val);
+				
+				i += regs.size() + 1;
+			}
+		} else if (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--ncycles")) {
+			if (argc <= i + 1) {
+				std::cout << "No number of cycle given\n\n";
+				help(argv[0]);
+				return 1;
+			} else if (maxiter != static_cast<unsigned long long>(-1)) {
+				std::cout << "Number of cycle already given\n\n";
+				help(argv[0]);
+				return 1;
+			} else {
+				char *endp = nullptr;
+				maxiter = std::strtoull(argv[i + 1], &endp, 0);
+				if (!endp || (*endp)) {
+					std::cout << "Invalid number of cycles given\n\n";
+					help(argv[0]);
+					return 1;
+				}
+				++i;
+			}
+		} else if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "--file")) {
+			if (argc <= i + 1) {
+				std::cout << "No filename given\n\n";
+				help(argv[0]);
+				return 1;
+			} else if (filename) {
+				std::cout << "Filename already given\n\n";
+				help(argv[0]);
+				return 1;
+			} else {
+				filename = argv[i + 1];
+				++i;
+			}
+		} else if (!strcmp(argv[i], "--fmt") || !strcmp(argv[i], "--format")) {
+			if (argc <= i + 1) {
+				std::cout << "No format given\n\n";
+				help(argv[0]);
+				return 1;
+			} else if (format) {
+				std::cout << "Format already given\n\n";
+				help(argv[0]);
+				return 1;
+			} else {
+				format = argv[i + 1];
+				++i;
+			}
+		}
+	}
+	if (!filename) {
+		std::cout << "No filename provided\n\n";
+		help(argv[0]);
+		return 1;
+	}
+	if (maxiter == static_cast<unsigned long long>(-1)) {
+		std::cout << "No cycle count provided\n\n";
+		help(argv[0]);
+		return 1;
+	}
+	
+	Instructions rom;
+	
+	std::fstream f{ filename, std::ios_base::in | std::ios_base::binary };
 	if (!f) {
-		std::cout << "Usage: " << argv[0] << " <binary blob> <n. executions>\nCouldn't open file '" << argv[1] << "'" << std::endl;
+		std::cout << "Couldn't open file '" << filename << "'\n\n";
+		help(argv[0]);
 		return 1;
 	}
 	char inp[sizeof(Instruction)];
@@ -80,7 +207,14 @@ int main(int argc, char **argv) {
 // std::cout << std::dec;
 	f.close();
 	
-	std::cout << "Read " /* << std::dec */ << rom.size() << " instructions" << std::endl;
+	if (!format) {
+		format = "%x"
+			"r0  = %r0\nr1  = %r1\nr2  = %r2\nr3  = %r3\nr4  = %r4\nr5  = %r5\nr6  = %r6\nr7  = %r7\n"
+			"r8  = %r8\nr9  = %r9\nr10 = %r10\nr11 = %r11\nr12 = %r12\nr13 = %r13\nr14 = %r14\nr15 = %r15\n"
+			"ip  = %ip\n%ram";
+	}
+	
+	if (show_initialized) std::cout << "Read " /* << std::dec */ << rom.size() << " instructions" << std::endl;
 	
 	bool failed = false;
 	for (unsigned long long niter = 0; (niter < maxiter) && !failed; ++niter) {
@@ -142,14 +276,62 @@ int main(int argc, char **argv) {
 	}
 	
 	std::cout << std::setfill('0');
-	for (std::uint8_t i = 0; i < regs.size() + 1; ++i) {
-		std::cout << "r" << std::setw(1) << std::dec << static_cast<unsigned>(i) << " = 0x" << std::setw(sizeof(Register) * 2) << std::hex << get_reg(regs, i) << "\n";
+	bool show_bin = false, show_hex = false;
+	for (std::size_t i = 0; format[i]; ++i) {
+		if (format[i] == '%') {
+#define TEST(s) !strncmp(format + i + 1, #s, std::strlen(#s))
+#define SHOW_VAL(v) do { \
+	if (show_bin) std::cout << "0b" << std::bitset<sizeof(v) * 8>(v); \
+	else if (show_hex) std::cout << "0x" << std::hex << std::setw(sizeof(v) * 2) << v; \
+	else std::cout << std::dec << std::setw(1) << v; \
+} while (false)
+#define OUTPUT(n) SHOW_VAL(get_reg(regs, n))
+			if (TEST(b)) {
+				show_bin = true;
+				++i;
+			} else if (TEST(d)) {
+				show_hex = show_bin = false;
+				++i;
+			} else if (TEST(x)) {
+				show_bin = false; show_hex = true;
+				++i;
+			} else if (TEST(r0)) { OUTPUT(0); i += 2; }
+			else if (TEST(r10)) { OUTPUT(10); i += 3; }
+			else if (TEST(r11)) { OUTPUT(11); i += 3; }
+			else if (TEST(r12)) { OUTPUT(12); i += 3; }
+			else if (TEST(r13)) { OUTPUT(13); i += 3; }
+			else if (TEST(r14)) { OUTPUT(14); i += 3; }
+			else if (TEST(r15)) { OUTPUT(15); i += 3; }
+			else if (TEST(r1))  { OUTPUT(1);  i += 2; }
+			else if (TEST(r2))  { OUTPUT(2);  i += 2; }
+			else if (TEST(r3))  { OUTPUT(3);  i += 2; }
+			else if (TEST(r4))  { OUTPUT(4);  i += 2; }
+			else if (TEST(r5))  { OUTPUT(5);  i += 2; }
+			else if (TEST(r6))  { OUTPUT(6);  i += 2; }
+			else if (TEST(r7))  { OUTPUT(7);  i += 2; }
+			else if (TEST(r8))  { OUTPUT(8);  i += 2; }
+			else if (TEST(r9))  { OUTPUT(9);  i += 2; }
+			else if (TEST(ip)) { SHOW_VAL(ip); i += 2; }
+			else if (TEST(insn)) {
+				std::cout << std::bitset<sizeof(Instruction) * 8>(rom[ip]);
+				i += 4;
+			}
+			else if (TEST(ram)) {
+				// Unordered display
+				for (const auto &r : ram) {
+					std::cout << "RAM[" << std::setw(1) << std::dec << r.first << "] = ";
+					SHOW_VAL(r.second);
+					std::cout << "\n";
+				}
+				i += 3;
+			} else {
+				std::cout << format[i];
+			}
+		} else {
+			std::cout << format[i];
+		}
 	}
-	std::cout << "ip = 0x" << std::setw(sizeof(Register) * 2) << std::hex << ip << "\n";
-	// Unordered display
-	for (const auto &r : ram) {
-		std::cout << "RAM[" << std::setw(1) << std::dec << r.first << "] = 0x" << std::setw(sizeof(Register) * 2) << std::hex << r.second << "\n";
-	}
+	std::cout << std::flush;
 	
 	return 0;
 }
