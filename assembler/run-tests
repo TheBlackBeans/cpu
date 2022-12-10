@@ -23,3 +23,4 @@ echo
 for msg in "${echecs[@]}"; do
     echo "$msg"
 done
+(( ${#echecs} != 0 )) && exit 1 || exit 0
