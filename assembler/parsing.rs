@@ -231,22 +231,22 @@ fn read_expression(ast: BeansAST) -> Result<Expression> {
         let a1 = read_arg(get!(node, "left"))?;
         let a2 = read_arg(get!(node, "right"))?;
         if matches!((&a1, &a2), (Arg::Immediate(_), Arg::Immediate(_))) {
-        eprintln!(
-            "Error: cannot have two immediates in a single instruction, {}",
-            node.span
-        );
-        exit(1);
+            eprintln!(
+                "Error: cannot have two immediates in a single instruction, {}",
+                node.span
+            );
+            exit(1);
         }
-    let (op, swap) = read_expr_bin_op(get!(node, "op"));
-    let (a1, a2) = if swap {
-        (a2, a1)
-    } else {
-        (a1, a2)
-    };
+        let (op, swap) = read_expr_bin_op(get!(node, "op"));
+        let (a1, a2) = if swap {
+            (a2, a1)
+        } else {
+            (a1, a2)
+        };
         Expression::Diadic {
-        op,
-        a1,
-        a2,
+            op,
+            a1,
+            a2,
         }
     }
     }})
@@ -262,7 +262,7 @@ fn read_stmt_mon_jmp(ast: BeansAST) -> StmtMonOp {
 fn read_stmt_bin_jmp(ast: BeansAST) -> StmtBinOp {
     let mut node = node!(ast);
     match_variant! {(node) {
-        "Jz" => StmtBinOp::Jz,
+    "Jz" => StmtBinOp::Jz,
     "Jnz" => StmtBinOp::Jnz,
     }}
 }
