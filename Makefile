@@ -9,7 +9,7 @@ COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 all: build doc
 .PHONY: all
 
-build: out/cpu out/vm out/asj out/clock
+build: out/cpu out/vm out/asj out/clock out/clock-nonstop
 .PHONY: build
 
 doc: out/instructionset.pdf
@@ -18,7 +18,7 @@ doc: out/instructionset.pdf
 check: check/cpu check/vm check/asj
 .PHONY: check
 
-test: test/cpu test/vm test/asj test/clock
+test: test/cpu test/vm test/asj test/clock test/clock-nonstop
 .PHONY: test
 
 run: out/cpu
@@ -58,19 +58,24 @@ test/cpu: check/cpu
 .PHONY: test/cpu
 
 # Program
-PROGRAM_SOURCE := src/clock.asj
-
-out/clock: $(PROGRAM_SOURCE) out/asj
+out/clock: src/clock.asj out/asj
 	@echo "Compiling the clock program"
-	@out/asj $(PROGRAM_SOURCE) -o $@
+	@out/asj $< -o $@
+out/clock-nostop: src/clock-nostop.asj out/asj
+	@echo "Compiling the clock-nostop program"
+	@out/asj $< -o $@
 
-check/clock:
+check/clock check/clock-nostop:
 	@echo "Checking is made by compiling the program"
-.PHONY: check/clock
+.PHONY: check/clock check/clock-nostop
 
 test/clock:
 	@echo "No clock program test available"
 .PHONY: test/clock
+
+test/clock-nostop:
+	@echo "No clock program test available"
+.PHONY: test/clock-nostop
 
 # VM-relevant stuff
 VM_SOURCES := vm/main.cpp
