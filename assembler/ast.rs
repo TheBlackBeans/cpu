@@ -11,8 +11,13 @@ pub enum LabelImmediate {
 
 #[derive(Debug)]
 pub enum Immediate {
-    Immediate(i16),
+    Literal(i16),
+    LabelDifference(LabelImmediate, LabelImmediate),
     Label(LabelImmediate),
+    Add(Box<Immediate>, Box<Immediate>),
+    Sub(Box<Immediate>, Box<Immediate>),
+    Mul(Box<Immediate>, Box<Immediate>),
+    Div(Box<Immediate>, Box<Immediate>),
 }
 
 #[derive(Hash, PartialEq, Eq)]
@@ -61,10 +66,10 @@ pub enum ExprBinOp {
     Xor,
     CmpEq,
     CmpNeq,
+    CmpBel,
+    CmpAeq,
     CmpLt,
     CmpGeq,
-    CmpAb,
-    CmpBe,
 }
 
 impl ExprBinOp {
@@ -80,10 +85,10 @@ impl ExprBinOp {
             ExprBinOp::Xor => 0b00_111,
             ExprBinOp::CmpEq => 0b11_000,
             ExprBinOp::CmpNeq => 0b11_100,
-            ExprBinOp::CmpLt => 0b11_001,
-            ExprBinOp::CmpGeq => 0b11_101,
-            ExprBinOp::CmpAb => 0b11_011,
-            ExprBinOp::CmpBe => 0b11_111,
+            ExprBinOp::CmpBel => 0b11_001,
+            ExprBinOp::CmpAeq => 0b11_101,
+            ExprBinOp::CmpLt => 0b11_011,
+            ExprBinOp::CmpGeq => 0b11_111,
         }
     }
 }

@@ -58,6 +58,8 @@ ExprBinOp ::=
   CMPGT <CmpGt>
   CMPGEQ <CmpGeq>
   CMPAB <CmpAb>
+  CMPAE <CmpAe>
+  CMPBL <CmpBl>
   CMPBE <CmpBe>;
 
 "an instruction code"
@@ -90,6 +92,9 @@ Arg ::=
 
 JmpArg ::=
   Arg@arg <Arg>
+  JmpLabel@label <Label>;
+
+JmpLabel ::=
   LABEL.0@value <Global>
   FORWARD.0@value <Forward>
   BACKWARD.0@value <Backward>;
@@ -98,6 +103,7 @@ JmpArg ::=
 Calc ::=
   INT.0@value <Literal>
   LPAR Calc@this RPAR <Through>
+  JmpLabel@left MINUS JmpLabel@right <LabelDifference>
   (left-assoc) Calc@left MulDiv@op Calc@right <BinOp>
   (left-assoc) Calc@left AddSub@op Calc@right <BinOp>;
 

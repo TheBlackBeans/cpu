@@ -125,10 +125,10 @@ int main(int argc, char **argv) {
 		
 		case 0b110001: set_dest(insn, regs, (                  get_arg1(insn, regs)  ==                   get_arg2(insn, regs) ) ? 1 : 0); break; // cmpeq
 		case 0b111001: set_dest(insn, regs, (                  get_arg1(insn, regs)  !=                   get_arg2(insn, regs) ) ? 1 : 0); break; // cmpne
-		case 0b110011: set_dest(insn, regs, (static_cast<SReg>(get_arg1(insn, regs)) <  static_cast<SReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmplt
-		case 0b111011: set_dest(insn, regs, (static_cast<SReg>(get_arg1(insn, regs)) >= static_cast<SReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpge
-		case 0b110111: set_dest(insn, regs, (static_cast<UReg>(get_arg1(insn, regs)) <  static_cast<UReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpab
-		case 0b111111: set_dest(insn, regs, (static_cast<UReg>(get_arg1(insn, regs)) >= static_cast<UReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpbe
+		case 0b110011: set_dest(insn, regs, (static_cast<UReg>(get_arg1(insn, regs)) <  static_cast<UReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpbl
+		case 0b111011: set_dest(insn, regs, (static_cast<UReg>(get_arg1(insn, regs)) >= static_cast<UReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpae
+		case 0b110111: set_dest(insn, regs, (static_cast<SReg>(get_arg1(insn, regs)) <  static_cast<SReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmplt
+		case 0b111111: set_dest(insn, regs, (static_cast<SReg>(get_arg1(insn, regs)) >= static_cast<SReg>(get_arg2(insn, regs))) ? 1 : 0); break; // cmpge
 		
 		case 0b100000: set_dest(insn, regs, ram[get_arg1(insn, regs)]);  break; // load
 		case 0b100001: ram[get_arg1(insn, regs)] = get_arg2(insn, regs); break; // store

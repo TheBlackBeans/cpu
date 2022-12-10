@@ -147,19 +147,20 @@ fn read_binop(ast: BeansAST) -> BinOp {
     }}
 }
 
-fn read_calc(ast: BeansAST) -> Result<i16> {
+fn read_calc(ast: BeansAST) -> Result<Immediate> {
     let mut node = node!(ast);
     Ok(match_variant! {(node) {
-    "Literal" => value!(node).parse()?,
+    "Literal" => Immediate::Literal(value!(node).parse()?),
     "Through" => read_calc(get!(node, "this"))?,
+    "LabelDifference" => Immediate::LabelDifference(read_jmp_label(get!(node, "left"))?, read_jmp_label(get!(node, "right"))?),
     "BinOp" => {
         let left = read_calc(get!(node, "left"))?;
         let right = read_calc(get!(node, "right"))?;
         match read_binop(get!(node, "op")) {
-        BinOp::Add => left + right,
-        BinOp::Sub => left - right,
-        BinOp::Mul => left * right,
-        BinOp::Div => left / right,
+        BinOp::Add => Immediate::Add(Box::new(left), Box::new(right)),
+        BinOp::Sub => Immediate::Sub(Box::new(left), Box::new(right)),
+        BinOp::Mul => Immediate::Mul(Box::new(left), Box::new(right)),
+        BinOp::Div => Immediate::Div(Box::new(left), Box::new(right)),
         }
     }
     }})
@@ -167,17 +168,18 @@ fn read_calc(ast: BeansAST) -> Result<i16> {
 
 fn read_jmp_arg(ast: BeansAST) -> Result<Arg> {
     let mut node = node!(ast);
+    match_variant! {(node) {
+    "Arg" => read_arg(get!(node, "arg")),
+    "Label" => Ok(Arg::Immediate(Immediate::Label(read_jmp_label(get!(node, "label"))?))),
+    }}
+}
+
+fn read_jmp_label(ast: BeansAST) -> Result<LabelImmediate> {
+    let mut node = node!(ast);
     Ok(match_variant! {(node) {
-    "Arg" => read_arg(get!(node, "arg"))?,
-    "Global" => Arg::Immediate(
-        Immediate::Label(LabelImmediate::Global(value!(node)))
-    ),
-    "Forward" => Arg::Immediate(
-        Immediate::Label(LabelImmediate::Forward(value!(node).parse()?))
-    ),
-    "Backward" => Arg::Immediate(
-        Immediate::Label(LabelImmediate::Backward(value!(node).parse()?))
-    ),
+    "Global" => LabelImmediate::Global(value!(node)),
+    "Forward" => LabelImmediate::Forward(value!(node).parse()?),
+    "Backward" => LabelImmediate::Backward(value!(node).parse()?),
     }})
 }
 
@@ -192,7 +194,7 @@ fn read_arg(ast: BeansAST) -> Result<Arg> {
         }
         Arg::Register(register)
     },
-    "Immediate" => Arg::Immediate(Immediate::Immediate(read_calc(get!(node, "value"))?)),
+    "Immediate" => Arg::Immediate(read_calc(get!(node, "value"))?),
     }})
 }
 
@@ -212,9 +214,11 @@ fn read_expr_bin_op(ast: BeansAST) -> (ExprBinOp, bool) {
     "CmpLt" => (ExprBinOp::CmpLt, false),
     "CmpLeq" => (ExprBinOp::CmpGeq, true),
     "CmpGt" => (ExprBinOp::CmpLt, true),
-	"CmpGeq" => (ExprBinOp::CmpGeq, false),
-	"CmpAb" => (ExprBinOp::CmpAb, false),
-	"CmpBe" => (ExprBinOp::CmpBe, false),
+    "CmpGeq" => (ExprBinOp::CmpGeq, false),
+    "CmpAb" => (ExprBinOp::CmpBel, true),
+    "CmpAe" => (ExprBinOp::CmpAeq, false),
+    "CmpBl" => (ExprBinOp::CmpBel, false),
+    "CmpBe" => (ExprBinOp::CmpAeq, true),
     }}
 }
 
@@ -229,22 +233,22 @@ fn read_expression(ast: BeansAST) -> Result<Expression> {
         let a1 = read_arg(get!(node, "left"))?;
         let a2 = read_arg(get!(node, "right"))?;
         if matches!((&a1, &a2), (Arg::Immediate(_), Arg::Immediate(_))) {
-        eprintln!(
-            "Error: cannot have two immediates in a single instruction, {}",
-            node.span
-        );
-        exit(1);
+            eprintln!(
+                "Error: cannot have two immediates in a single instruction, {}",
+                node.span
+            );
+            exit(1);
         }
-    let (op, swap) = read_expr_bin_op(get!(node, "op"));
-    let (a1, a2) = if swap {
-        (a2, a1)
-    } else {
-        (a1, a2)
-    };
+        let (op, swap) = read_expr_bin_op(get!(node, "op"));
+        let (a1, a2) = if swap {
+            (a2, a1)
+        } else {
+            (a1, a2)
+        };
         Expression::Diadic {
-        op,
-        a1,
-        a2,
+            op,
+            a1,
+            a2,
         }
     }
     }})
@@ -260,7 +264,7 @@ fn read_stmt_mon_jmp(ast: BeansAST) -> StmtMonOp {
 fn read_stmt_bin_jmp(ast: BeansAST) -> StmtBinOp {
     let mut node = node!(ast);
     match_variant! {(node) {
-        "Jz" => StmtBinOp::Jz,
+    "Jz" => StmtBinOp::Jz,
     "Jnz" => StmtBinOp::Jnz,
     }}
 }
