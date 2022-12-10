@@ -11,8 +11,13 @@ pub enum LabelImmediate {
 
 #[derive(Debug)]
 pub enum Immediate {
-    Immediate(i16),
+    Literal(i16),
+    LabelDifference(LabelImmediate, LabelImmediate),
     Label(LabelImmediate),
+    Add(Box<Immediate>, Box<Immediate>),
+    Sub(Box<Immediate>, Box<Immediate>),
+    Mul(Box<Immediate>, Box<Immediate>),
+    Div(Box<Immediate>, Box<Immediate>),
 }
 
 #[derive(Hash, PartialEq, Eq)]
