@@ -54,10 +54,10 @@ start:
 	; We have passed <r15> days
 	r5 = sub r5, r15
 	r6 = add r6, 1
-	r8 = cmpae r6, 12 ; Dec -> Jan
-	jnz 1f, r8
 	r8 = cmpbe r6, 2 ; Jan -> Feb or Feb -> Mar
 	jnz 2f, r8
+	r8 = cmpae r6, 12 ; Dec -> Jan
+	jnz 1f, r8
 	r8 = cmpeq r6, 7 ; Jul -> Aug
 	jnz start, r8
 	r15 = sub 31 + 30, r15 ; Mar -> Apr, Apr -> May, May -> Jun, Jun -> Jul, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec

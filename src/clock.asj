@@ -77,12 +77,12 @@ start:
 	r1 = add r1, 0f - 0b
 	r5 = sub r5, r15
 	r6 = add r6, 1
-	r8 = cmpae r6, 12 ; Dec -> Jan
-	jnz 1f, r8
-0:
-	r1 = add r1, 0f - 0b
 	r8 = cmpbe r6, 2 ; Jan -> Feb or Feb -> Mar
 	jnz 2f, r8
+0:
+	r1 = add r1, 0f - 0b
+	r8 = cmpae r6, 12 ; Dec -> Jan
+	jnz 1f, r8
 0:
 	r1 = add r1, 0f - 0b
 	r8 = cmpeq r6, 7 ; Jul -> Aug
