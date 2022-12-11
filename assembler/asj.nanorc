@@ -1,0 +1,36 @@
+## Syntax highlighting for asj
+
+syntax sysnumcpu_asj "\.asj$"
+comment ";"
+
+# Error color
+color magenta "."
+
+# Assigning instruction line with two operands
+color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(add|sub|mul|div|mod|and|or|xor|cmp(eq|ne|lt|le|gt|ge|ab|ae|bl|be))[[:space:]]+(r([0-9]|1[0-5])[[:space:]]*,[[:space:]]*[^ 	;][^;]*|[^;,]+,[[:space:]]*r([0-9]|1[0-5]))"
+# Assigning instruction line with one operand
+color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(load)[[:space:]]+[^ 	;][^;]+"
+# Non-assigning instruction line with two operands
+color normal "^[[:space:]]+(jn?zo?)[[:space:]]+(r([0-9]|1[0-5])[[:space:]]*,[[:space:]]*[^;]+|[^;,]+[[:space:]]*,[[:space:]]*r([0-9]|1[0-5]))"
+# Non-assigning instruction line with one operand
+color normal "^[[:space:]]+(jmp|jo|store)[[:space:]]+[^;]+"
+
+# Registers
+color blue "r([0-9]|1[0-5])"
+# Local labels forward/backward
+color cyan "\<[0-9][bf]\>"
+color brightcyan "(jmp|jo|jn?zo?)[[:space:]]+([_a-zA-Z][_a-zA-Z0-9]*|[0-9][bf])\>"
+
+# Commands
+color brightwhite "\<(add|sub|mul|div|mod|and|or|xor|cmp(eq|ne|lt|le|gt|ge|ab|ae|bl|be)|load|jn?zo?|jmp|jo|store)\>"
+
+# Labels
+color brightred "^([_a-zA-Z][_a-zA-Z0-9]*|[0-9]):"
+
+# Comments
+color white "[[:space:]]*;.*$"
+
+# Spaces at end-of-line...
+color ,green "[[:space:]]+$"
+# ... except for alignment purposes
+color normal "^[[:space:]]+$"

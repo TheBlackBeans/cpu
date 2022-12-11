@@ -273,7 +273,7 @@ bit.
 \begin{table}
   \caption{Operation list}
 
-  \begin{tabular}{lcrlr}
+  \begin{tabular}{lcrl}
     \toprule
     \textbf{Name} & \textbf{Arity} & \textbf{Encoding} & \textbf{Effect}\\
     \midrule
@@ -293,10 +293,10 @@ bit.
     \midrule
     jmp & 1 & \(01\;000\) & \(ip=a_1\)\\
     jo & 1 & \(01\;001\) & \(ip=ip+a_1\)\\
-    jz & 2 & \(01\;000\) & if \(a_1=0\), \(ip=a_2\)\\
-    jzo & 2 & \(01\;001\) & if \(a_1=0\), \(ip=ip+a_2\)\\
-    jnz & 2 & \(01\;010\) & if \(a_1\neq0\), \(ip=a_2\)\\
-    jnzo & 2 & \(01\;011\) & if \(a_2\neq0\), \(ip=ip+a_2\)\\
+    jz & 2 & \(01\;000\) & if \(a_2=0\), \(ip=a_1\)\\
+    jzo & 2 & \(01\;001\) & if \(a_2=0\), \(ip=ip+a_1\)\\
+    jnz & 2 & \(01\;010\) & if \(a_2\neq0\), \(ip=a_1\)\\
+    jnzo & 2 & \(01\;011\) & if \(a_2\neq0\), \(ip=ip+a_1\)\\
     \midrule
     \multicolumn{3}{c}{Comparison operation}\\
     \midrule
@@ -317,10 +317,10 @@ bit.
     \midrule
     eq & \(000\)\\
     ne & \(100\)\\
-    lt & \(001\)\\
-    le & \(110\)\\
-    gt & \(010\)\\
-    ge & \(101\)\\
+    bl & \(001\)\\
+    ae & \(101\)\\
+    lt & \(011\)\\
+    ge & \(111\)\\
     \bottomrule
   \end{tabular}
 

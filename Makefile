@@ -9,16 +9,16 @@ COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 all: build doc
 .PHONY: all
 
-build: out/cpu out/asj
+build: out/cpu out/vm out/asj
 .PHONY: build
 
 doc: out/instructionset.pdf
 .PHONY: doc
 
-check: check/cpu check/asj
+check: check/cpu check/vm check/asj
 .PHONY: check
 
-test: test/cpu test/asj
+test: test/cpu test/vm test/asj
 .PHONY: test
 
 run: out/cpu
@@ -45,7 +45,7 @@ out/cpu: $(CPU_SOURCES) | out
 	@$(COMPILER) $(COMPILER_FLAGS) -o $@ $^
 
 check/cpu:
-	@if which svlint >/dev/null 2>&1; then echo "Calling svlint"; $(foreach file,$(CPU_SOURCES),svlint $(file);) fi
+	@if which svlint >/dev/null 2>&1; then echo "Calling svlint"; svlint $(CPU_SOURCES); fi
 	@echo "Null-building the CPU"
 	@$(COMPILER) $(COMPILER_FLAGS) -t null $(CPU_SOURCES)
 	@echo "Checking test decriptions"
@@ -56,6 +56,21 @@ test/cpu: check/cpu
 	@echo "Running CPU tests"
 	@tests/run_tests.sh
 .PHONY: test/cpu
+
+# VM-relevant stuff
+VM_SOURCES := vm/main.cpp
+
+out/vm: $(VM_SOURCES) | out
+	@echo "Compiling the VM"
+	@$(CXX) $(CXXFLAGS) -g -O2 -Wall -Wextra -o $@ $^
+
+check/vm:
+	@echo "No VM check"
+.PHONY: check/vm
+
+test/vm: check/vm
+	@echo "No VM test available"
+.PHONY: test/vm
 
 # Assembler-relevant stuff
 ASSEMBLER_SOURCES := $(wildcard assembler/*.rs) assembler/asj.clx assembler/asj.cgr
@@ -78,7 +93,7 @@ assembler/%.clx: assembler/%.lx
 assembler/%.cgr: assembler/%.gr assembler/%.clx
 	beans compile parser --lexer $(word 2,$^) $<
 
-check/asj:
+check/asj: $(ASSEMBLER_SOURCES)
 	cargo clippy
 .PHONY: check/asj
 
