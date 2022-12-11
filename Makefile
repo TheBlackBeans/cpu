@@ -9,7 +9,7 @@ COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 all: build doc
 .PHONY: all
 
-build: out/cpu out/vm out/asj out/clock out/clock-nonstop
+build: out/cpu out/vm out/asj out/clock out/clock-nostop
 .PHONY: build
 
 doc: out/instructionset.pdf
@@ -18,7 +18,7 @@ doc: out/instructionset.pdf
 check: check/cpu check/vm check/asj
 .PHONY: check
 
-test: test/cpu test/vm test/asj test/clock test/clock-nonstop
+test: test/cpu test/vm test/asj test/clock test/clock-nostop
 .PHONY: test
 
 run: out/cpu
