@@ -130,6 +130,7 @@ void display_formatted(const char *fmt, const Registers &regs, const Register &i
 			std::cout << fmt[i];
 		}
 	}
+	std::cout << std::flush;
 }
 
 int main(int argc, char **argv) {
