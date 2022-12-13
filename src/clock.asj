@@ -28,7 +28,7 @@ _init:
 	r13 = add r0, 1
 	r12 = add r0, 1
 	
-	r1 = add r0, (start - _init) + (_compute_r14_end - compute_r14)
+	r1 = add r0, (0f - _init) + (_compute_r14_end - compute_r14)
 	jmp compute_r14  ; Increase the virtual year: year 0: 0 mod 4, 0 mod 100, 0 mod 400 -> will store 4, 25, 4
 	
 0:
