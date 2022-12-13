@@ -1,0 +1,140 @@
+; r0 -- 0
+; r1 -- # of clock cycles (unsigned)
+; r2 -- # seconds (unsigned)
+; r3 -- # minutes (unsigned)
+; r4 -- # hours (unsigned)
+; r5 -- # days (unsigned)
+; r6 -- # month (unsigned)
+; r7 -- # year (signed?)
+; r8 -- scratch
+; r11 -- # days in February of the current year: r11 = 29 iff r14 = 4 and r13 < 25 or r12 = 4, r11 = 28 otherwise
+; r12 -- # 100-years until r7 = 0 mod 400 (excluding current)
+; r13 -- # 4-years until r7 = 0 mod 100 (excluding current)
+; r14 -- # years until r7 = 0 mod 4 (excluding current)
+; r15 -- # days in the current month
+
+; 0: -- separation to count the correct number of cycles spent
+
+; out/vm -f out/clock -n <ncycles> -r <r1> <r2> <r3> <r4> <r5> <r6> <r7> <r8> 0 0 <r11> <r12> <r13> <r14> <r15> <ip> -q --ifmt "%x%r1 %r2 %r3 %r4 %r5 %r6 %r7 %r8 %r11 %r12 %r13 %r14 %r15 %ip | %insn"$'\n'
+; Seconds transition: 999 0 0 0 0 0 0 0 0 0 0x1d 4 0x19 4 0x1f 6
+; After 1000*60*60*24*31 + 20 cycles: 0x0014 0x0000 0x0000 0x0000 0x001f 0x0000 0x0000 0x0001 0x0000 0x0000 0x001d 0x0004 0x0019 0x0004 0x001f 0x001c
+
+_init:
+	; TODO: read the current time from some I/O here
+
+	r15 = 31 ; January -> 31 days
+	
+	r14 = 1  ; Year -1: -1 mod 4, -1 mod 100, -1 mod 400 -> store 4-3=1, 25-24=1, 4-3=1
+	r13 = 1
+	r12 = 1
+	
+	r1 = (0f - _init) + (_compute_r14_end - compute_r14)
+	jmp compute_r14  ; Increase the virtual year: year 0: 0 mod 4, 0 mod 100, 0 mod 400 -> will store 4, 25, 4
+	
+0:
+not_bis:
+	r1 = add r1, 0f - 0b
+	r11 = 28
+0:
+start:
+	r1 = add r1, 0f - 0b
+	r8 = cmpae r1, 1000           ; N. cycles per second present here
+	jz start, r8
+	
+0:
+	; We have passed 1000 cycle
+	r1 = sub r1, 1000 - (0f - 0b) ; N. cycles per second present here
+	r2 = add r2, 1
+	r8 = cmpae r2, 60
+	jz start, r8
+	
+0:
+	; We have passed 60 second
+	r1 = add r1, 0f - 0b
+	r2 = sub r2, 60
+	r3 = add r3, 1
+	r8 = cmpae r3, 60
+	jz start, r8
+	
+0:
+	; We have passed 60 minutes
+	r1 = add r1, 0f - 0b
+	r3 = sub r3, 60
+	r4 = add r4, 1
+	r8 = cmpae r4, 24
+	jz start, r8
+	
+0:
+	; We have passed 24 hours
+	r1 = add r1, 0f - 0b
+	r4 = sub r4, 24
+	r5 = add r5, 1
+	r8 = cmpae r5, r15
+	jz start, r8
+	
+0:
+	; We have passed <r15> days
+	r1 = add r1, 0f - 0b
+	r5 = sub r5, r15
+	r6 = add r6, 1
+	r8 = cmpbe r6, 2 ; Jan -> Feb or Feb -> Mar
+	jnz 2f, r8
+0:
+	r1 = add r1, 0f - 0b
+	r8 = cmpae r6, 12 ; Dec -> Jan
+	jnz 1f, r8
+0:
+	r1 = add r1, 0f - 0b
+	r8 = cmpeq r6, 7 ; Jul -> Aug
+	jnz start, r8
+0:
+	r1 = add r1, 0f - 0b
+	r15 = sub 31 + 30, r15 ; Mar -> Apr, Apr -> May, May -> Jun, Jun -> Jul, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
+	jmp start
+0:
+2:
+	r1 = add r1, 0f - 0b
+	r8 = cmpeq r6, 1 ; Jan -> Feb
+	jnz 2f, r8
+0:
+	; Feb -> Mar
+	r1 = add r1, 0f - 0b
+	r15 = 31
+	jmp start
+0:
+2:
+	; Jan -> Feb
+	r1 = add r1, 0f - 0b
+	r15 = r11
+	jmp start
+0:
+1:
+	; We have passed 12 months
+	r1 = add r1, 0f - 0b
+	r6 = sub r6, 12
+	r15 = 31 ; Reset the number of days in a month as well
+	r7 = add r7, 1
+compute_r14:
+	; Now compute the number of days in February
+	r14 = sub r14, 1
+	jnz not_bis, r14
+_compute_r14_end:
+0:
+	r1 = add r1, 0f - 0b
+	r14 = 4
+	r13 = sub r13, 1
+	jnz bis, r13
+0:
+	r1 = add r1, 0f - 0b
+	r13 = 25
+	r12 = sub r12, 1
+	jnz not_bis, r12
+0:
+	r1 = add r1, 0f - 0b
+	r12 = 4
+0:
+bis:
+	r1 = add r1, 0f - 0b
+	r11 = 29
+	jmp start
+0: ; End of file
