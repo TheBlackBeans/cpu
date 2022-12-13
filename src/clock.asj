@@ -22,19 +22,19 @@
 _init:
 	; TODO: read the current time from some I/O here
 
-	r15 = add r0, 31 ; January -> 31 days
+	r15 = 31 ; January -> 31 days
 	
-	r14 = add r0, 1  ; Year -1: -1 mod 4, -1 mod 100, -1 mod 400 -> store 4-3=1, 25-24=1, 4-3=1
-	r13 = add r0, 1
-	r12 = add r0, 1
+	r14 = 1  ; Year -1: -1 mod 4, -1 mod 100, -1 mod 400 -> store 4-3=1, 25-24=1, 4-3=1
+	r13 = 1
+	r12 = 1
 	
-	r1 = add r0, (0f - _init) + (_compute_r14_end - compute_r14)
+	r1 = (0f - _init) + (_compute_r14_end - compute_r14)
 	jmp compute_r14  ; Increase the virtual year: year 0: 0 mod 4, 0 mod 100, 0 mod 400 -> will store 4, 25, 4
 	
 0:
 not_bis:
 	r1 = add r1, 0f - 0b
-	r11 = add r0, 28
+	r11 = 28
 0:
 start:
 	r1 = add r1, 0f - 0b
@@ -99,20 +99,20 @@ start:
 0:
 	; Feb -> Mar
 	r1 = add r1, 0f - 0b
-	r15 = add r0, 31
+	r15 = 31
 	jmp start
 0:
 2:
 	; Jan -> Feb
 	r1 = add r1, 0f - 0b
-	r15 = add r0, r11
+	r15 = r11
 	jmp start
 0:
 1:
 	; We have passed 12 months
 	r1 = add r1, 0f - 0b
 	r6 = sub r6, 12
-	r15 = add r0, 31 ; Reset the number of days in a month as well
+	r15 = 31 ; Reset the number of days in a month as well
 	r7 = add r7, 1
 compute_r14:
 	; Now compute the number of days in February
@@ -121,20 +121,20 @@ compute_r14:
 _compute_r14_end:
 0:
 	r1 = add r1, 0f - 0b
-	r14 = add r0, 4
+	r14 = 4
 	r13 = sub r13, 1
 	jnz bis, r13
 0:
 	r1 = add r1, 0f - 0b
-	r13 = add r0, 25
+	r13 = 25
 	r12 = sub r12, 1
 	jnz not_bis, r12
 0:
 	r1 = add r1, 0f - 0b
-	r12 = add r0, 4
+	r12 = 4
 0:
 bis:
 	r1 = add r1, 0f - 0b
-	r11 = add r0, 29
+	r11 = 29
 	jmp start
 0: ; End of file
