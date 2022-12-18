@@ -1,0 +1,2 @@
+-g2012 ../src/regfile.sv
+regfile/basic.txt@Basic Regfile@regfile/basic.sv

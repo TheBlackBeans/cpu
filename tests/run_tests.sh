@@ -138,6 +138,7 @@ echo "Testing using '"$'\e[1m'"$compiler"$'\e[m'"' in $(pwd)"
 run_test "reg"
 run_test "alu"
 run_test "ram"
+run_test "regfile"
 # <--- INSERT HERE
 
 echo "$failure_txt"
