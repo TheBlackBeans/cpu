@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
 				for (std::size_t j = 0; j < regs.size(); ++j) {
 					char *endp = nullptr;
 					unsigned long long val = std::strtoull(argv[i + 1 + j], &endp, 0);
-					if (!endp || *endp || (val >= (1 << 8) << sizeof(regs[j]))) {
+					if (!endp || *endp || (val >= (1 << register_size) << sizeof(regs[j]))) {
 						std::cout << "Invalid value for register r" << (j + 1) << " given\n\n";
 						help(argv[0]);
 						return 1;
