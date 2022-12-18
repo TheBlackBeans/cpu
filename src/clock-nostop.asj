@@ -1,0 +1,93 @@
+; r0 -- 0
+; r2 -- # seconds (unsigned)
+; r3 -- # minutes (unsigned)
+; r4 -- # hours (unsigned)
+; r5 -- # days (unsigned)
+; r6 -- # month (unsigned)
+; r7 -- # year (signed?)
+; r8 -- scratch
+; r11 -- # days in February of the current year: r11 = 29 iff r14 = 4 and r13 < 25 or r12 = 4, r11 = 28 otherwise
+; r12 -- # 100-years until r7 = 0 mod 400 (excluding current)
+; r13 -- # 4-years until r7 = 0 mod 100 (excluding current)
+; r14 -- # years until r7 = 0 mod 4 (excluding current)
+; r15 -- # days in the current month
+
+; out/vm -f out/clock -n <ncycles> -r 0 <r2> <r3> <r4> <r5> <r6> <r7> <r8> 0 0 <r11> <r12> <r13> <r14> <r15> <ip> -q --ifmt "%x%r2 %r3 %r4 %r5 %r6 %r7 %r8 %r11 %r12 %r13 %r14 %r15 %ip | %insn"$'\n'
+; out/vm -f out/clock -n <ncycles> -r 0 <r2> <r3> <r4> <r5> <r6> <r7> <r8> 0 0 <r11> <r12> <r13> <r14> <r15> <ip> -q --ifmt "%d%r5/%r6/%r7 %r4:%r3:%r2 [%r8 %r11;%r12,%r13,%r14 %r15; %ip | %insn]"$'\n'
+
+_init:
+	; TODO: read the current time from some I/O here
+
+	r15 = 31 ; January -> 31 days
+	
+	r14 = 1  ; Year -1: -1 mod 4, -1 mod 100, -1 mod 400 -> store 4-3=1, 25-24=1, 4-3=1
+	r13 = 1
+	r12 = 1
+	
+	jmp compute_r14  ; Increase the virtual year: year 0: 0 mod 4, 0 mod 100, 0 mod 400 -> will store 4, 25, 4
+	
+not_bis:
+	r11 = 28
+start:
+	r2 = add r2, 1
+	r8 = cmpae r2, 60
+	jz start, r8
+	
+	; We have passed 60 second
+	r2 = sub r2, 60
+	r3 = add r3, 1
+	r8 = cmpae r3, 60
+	jz start, r8
+	
+	; We have passed 60 minutes
+	r3 = sub r3, 60
+	r4 = add r4, 1
+	r8 = cmpae r4, 24
+	jz start, r8
+	
+	; We have passed 24 hours
+	r4 = sub r4, 24
+	r5 = add r5, 1
+	r8 = cmpae r5, r15
+	jz start, r8
+	
+	; We have passed <r15> days
+	r5 = sub r5, r15
+	r6 = add r6, 1
+	r8 = cmpbe r6, 2 ; Jan -> Feb or Feb -> Mar
+	jnz 2f, r8
+	r8 = cmpae r6, 12 ; Dec -> Jan
+	jnz 1f, r8
+	r8 = cmpeq r6, 7 ; Jul -> Aug
+	jnz start, r8
+	r15 = sub 31 + 30, r15 ; Mar -> Apr, Apr -> May, May -> Jun, Jun -> Jul, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
+	jmp start
+2:
+	r8 = cmpeq r6, 1 ; Jan -> Feb
+	jnz 2f, r8
+	; Feb -> Mar
+	r15 = 31
+	jmp start
+2:
+	; Jan -> Feb
+	r15 = r11
+	jmp start
+1:
+	; We have passed 12 months
+	r6 = sub r6, 12
+	r15 = 31 ; Reset the number of days in a month as well
+	r7 = add r7, 1
+compute_r14:
+	; Now compute the number of days in February
+	r14 = sub r14, 1
+	jnz not_bis, r14
+	r14 = 4
+	r13 = sub r13, 1
+	jnz bis, r13
+	r13 = 25
+	r12 = sub r12, 1
+	jnz not_bis, r12
+	r12 = 4
+bis:
+	r11 = 29
+	jmp start

@@ -31,6 +31,7 @@ Instruction ::=
 
 "an expression"
 Expression ::=
+  Arg@right <Diadic op: ExprBinOp {Add} left: Arg {Register value: "0"}>
   ExprMonOp@op Arg@arg <Monadic>
   ExprBinOp@op Arg@left COMMA Arg@right <Diadic>;
 
