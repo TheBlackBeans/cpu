@@ -1,2 +1,2 @@
 -g2012 ../src/ram.sv
-ram/basic.txt@Basic@ram/basic.sv
+ram/basic.txt@Basic RAM@ram/basic.sv
