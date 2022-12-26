@@ -7,7 +7,7 @@
 ; r6 -- # month (unsigned)
 ; r7 -- # year (signed?)
 ; r8 -- scratch
-; r11 -- # days in February of the current year: r11 = 29 iff r14 = 4 and r13 < 25 or r12 = 4, r11 = 28 otherwise
+; r11 -- # days in February of the current year: r11 = 29 iff r14 = 4 and (r13 < 25 or r12 = 4), r11 = 28 otherwise  (during year initialization, scratch)
 ; r12 -- # 100-years until r7 = 0 mod 400 (excluding current)
 ; r13 -- # 4-years until r7 = 0 mod 100 (excluding current)
 ; r14 -- # years until r7 = 0 mod 4 (excluding current)
@@ -20,16 +20,276 @@
 ; After 1000*60*60*24*31 + 20 cycles: 0x0014 0x0000 0x0000 0x0000 0x001f 0x0000 0x0000 0x0001 0x0000 0x0000 0x001d 0x0004 0x0019 0x0004 0x001f 0x001c
 
 _init:
-	; TODO: read the current time from some I/O here
-
-	r15 = 31 ; January -> 31 days
+	; Read year
+	jmp 0f
 	
-	r14 = 1  ; Year -1: -1 mod 4, -1 mod 100, -1 mod 400 -> store 4-3=1, 25-24=1, 4-3=1
-	r13 = 1
-	r12 = 1
+read_years: ; Next binary digit
+	r8 = cmpae r14, 4
+	r11 = mul r8, 4
+	r14 = sub r14, r11
+	r13 = add r13, r13
+	r13 = add r13, r8
+	r8 = cmpae r13, 25
+	r11 = mul r8, 25
+	r13 = sub r13, r11
+	r12 = add r12, r12
+	r12 = add r12, r8
+	r8 = cmpae r12, 4
+	r11 = mul r8, 4
+	r12 = sub r12, r11
+0:
+	send 5, r7
+read_years_00:
+	r8 = recv 0
+	jnz read_years_01, r8
+	r8 = recv 1
+	jz read_years_00, r8
 	
-	r1 = (0f - _init) + (_compute_r14_end - compute_r14)
-	jmp compute_r14  ; Increase the virtual year: year 0: 0 mod 4, 0 mod 100, 0 mod 400 -> will store 4, 25, 4
+read_years_10:
+	r8 = recv 0
+	jnz read_years_11, r8
+	r8 = recv 1
+	jnz read_years_10, r8
+	r7 = add r7, r7
+	r7 = add r7, 1
+	; 2n + 1 mod 4 -> double, add 1, compare once to 4
+	; If one, remove 4, and add 1 to the next, and so on (and we know for sure we are not overflowing above 4: the max possible value is 7)
+	; That way, r12,r13,r14 are always in sync with r7
+	r14 = add r14, r14
+	r14 = add r14, 1
+	jmp read_years
+	
+read_years_01:
+	r8 = recv 1
+	jnz read_years_11, r8
+	r8 = recv 0
+	jnz read_years_01, r8
+	r7 = add r7, r7
+	r14 = add r14, r14
+	jmp read_years
+	
+read_years_11:
+	r8 = recv 1
+	jnz read_years_11, r8
+	r8 = recv 0
+	jnz read_years_11, r8
+	
+	; Now compute r11
+	; First, setup for next year
+	r12 = sub 4, r12
+	r13 = sub 25, r13
+	r14 = sub 4, r14
+	; Next, do the computation: r11 = 29 if r14 = 4 and r13 < 25, or r14 = 4 and r13 = 25 and r12 = 4
+	; Equivalently, r11 = 28 + ((r14 = 4) and ((r13 < 25) or (r12 = 4)))
+	r8 = cmpeq r12, 4
+	r11 = cmpne r13, 25
+	r11 = or r11, r8 ; r12 = 4 || r13 < 25
+	r8 = cmpeq r14, 4
+	r8 = and r8, r11
+	r11 = add 28, r8
+	
+	; Read month
+read_months:
+	send 4, r6
+read_months_00:
+	r8 = recv 0
+	jnz read_months_01, r8
+	r8 = recv 1
+	jz read_months_00, r8
+	
+read_months_10:
+	r8 = recv 0
+	jnz read_months_11, r8
+	r8 = recv 1
+	jnz read_months_10, r8
+	r6 = add r6, r6
+	r6 = add r6, 1
+	r8 = cmpae r6, 12
+	jz 0f, r8
+	r6 = 0
+0:
+	jmp read_months
+	
+read_months_01:
+	r8 = recv 1
+	jnz read_months_11, r8
+	r8 = recv 0
+	jnz read_months_01, r8
+	r6 = add r6, r6
+	r8 = cmpae r6, 12
+	jz 0f, r8
+	r6 = 0
+0:
+	jmp read_months
+	
+read_months_11:
+	r8 = recv 1
+	jnz read_months_11, r8
+	r8 = recv 0
+	jnz read_months_11, r8
+	
+	; Compute number of days in the current month
+	r8 = cmpeq r6, 1 ; Feb
+	jz 2f, r8
+	r15 = r11
+	jmp 1f
+2:
+	r8 = cmpae r6, 7 ; Aug, Sep, Oct, Nov, Dec
+	r8 = sub r6, r8
+	r8 = and r8, 1   ; Apr, Jun, Sep, Nov
+	r15 = sub 31, r8
+1:
+	; Receive number of days
+read_days:
+	send 3, r5
+read_days_00:
+	r8 = recv 0
+	jnz read_days_01, r8
+	r8 = recv 1
+	jz read_days_00, r8
+	
+read_days_10:
+	r8 = recv 0
+	jnz read_days_11, r8
+	r8 = recv 1
+	jnz read_days_10, r8
+	r5 = add r5, r5
+	r5 = add r5, 1
+	r8 = cmpae r5, r15
+	jz 0f, r8
+	r5 = 0
+0:
+	jmp read_days
+	
+read_days_01:
+	r8 = recv 1
+	jnz read_days_11, r8
+	r8 = recv 0
+	jnz read_days_01, r8
+	r5 = add r5, r5
+	r8 = cmpae r5, r15
+	jz 0f, r8
+	r5 = 0
+0:
+	jmp read_days
+	
+read_days_11:
+	r8 = recv 1
+	jnz read_days_11, r8
+	r8 = recv 0
+	jnz read_days_11, r8
+	
+	; Read hour
+read_hour:
+	r8 = cmpae r4, 24
+	jz 0f, r8
+	r4 = 0
+0:
+	send 2, r4
+read_hour_00:
+	r8 = recv 0
+	jnz read_hour_01, r8
+	r8 = recv 1
+	jz read_hour_00, r8
+	
+read_hour_10:
+	r8 = recv 0
+	jnz read_hour_11, r8
+	r8 = recv 1
+	jnz read_hour_10, r8
+	r4 = add r4, r4
+	r4 = add r4, 1
+	jmp read_hour
+	
+read_hour_01:
+	r8 = recv 1
+	jnz read_hour_11, r8
+	r8 = recv 0
+	jnz read_hour_01, r8
+	r4 = add r4, r4
+	jmp read_hour
+	
+read_hour_11:
+	r8 = recv 1
+	jnz read_hour_11, r8
+	r8 = recv 0
+	jnz read_hour_11, r8
+	
+	; Read minutes
+read_mins:
+	r8 = cmpae r3, 60
+	jz 0f, r8
+	r3 = 0
+0:
+	send 1, r3
+read_mins_00:
+	r8 = recv 0
+	jnz read_mins_01, r8
+	r8 = recv 1
+	jz read_mins_00, r8
+	
+read_mins_10:
+	r8 = recv 0
+	jnz read_mins_11, r8
+	r8 = recv 1
+	jnz read_mins_10, r8
+	r3 = add r3, r3
+	r3 = add r3, 1
+	jmp read_mins
+	
+read_mins_01:
+	r8 = recv 1
+	jnz read_mins_11, r8
+	r8 = recv 0
+	jnz read_mins_01, r8
+	r3 = add r3, r3
+	jmp read_mins
+	
+read_mins_11:
+	r8 = recv 1
+	jnz read_mins_11, r8
+	r8 = recv 0
+	jnz read_mins_11, r8
+	
+	; Read seconds
+read_secs:
+	r8 = cmpae r2, 60
+	jz 0f, r8
+	r2 = 0
+0:
+	send 0, r2
+read_secs_00:
+	r8 = recv 0
+	jnz read_secs_01, r8
+	r8 = recv 1
+	jz read_secs_00, r8
+	
+read_secs_10:
+	r8 = recv 0
+	jnz read_secs_11, r8
+	r8 = recv 1
+	jnz read_secs_10, r8
+	r2 = add r2, r2
+	r2 = add r2, 1
+	jmp read_secs
+	
+read_secs_01:
+	r8 = recv 1
+	jnz read_secs_11, r8
+	r8 = recv 0
+	jnz read_secs_01, r8
+	r2 = add r2, r2
+	jmp read_secs
+	
+read_secs_11:
+	; We don't need to wait for the user to release the buttons
+	;r8 = recv 1
+	;jnz read_secs_11, r8
+	;r8 = recv 0
+	;jnz read_secs_11, r8
+	
+	r1 = 0
+	jmp start ; Finished initialization
 	
 0:
 not_bis:
@@ -45,6 +305,7 @@ start:
 	; We have passed 1000 cycle
 	r1 = sub r1, 1000 - (0f - 0b) ; N. cycles per second present here
 	r2 = add r2, 1
+	send 0, r2
 	r8 = cmpae r2, 60
 	jz start, r8
 	
@@ -52,7 +313,9 @@ start:
 	; We have passed 60 second
 	r1 = add r1, 0f - 0b
 	r2 = sub r2, 60
+	send 0, r2
 	r3 = add r3, 1
+	send 1, r3
 	r8 = cmpae r3, 60
 	jz start, r8
 	
@@ -60,7 +323,9 @@ start:
 	; We have passed 60 minutes
 	r1 = add r1, 0f - 0b
 	r3 = sub r3, 60
+	send 1, r3
 	r4 = add r4, 1
+	send 2, r4
 	r8 = cmpae r4, 24
 	jz start, r8
 	
@@ -68,7 +333,9 @@ start:
 	; We have passed 24 hours
 	r1 = add r1, 0f - 0b
 	r4 = sub r4, 24
+	send 2, r4
 	r5 = add r5, 1
+	send 3, r5
 	r8 = cmpae r5, r15
 	jz start, r8
 	
@@ -76,8 +343,10 @@ start:
 	; We have passed <r15> days
 	r1 = add r1, 0f - 0b
 	r5 = sub r5, r15
+	send 3, r5
 	r6 = add r6, 1
-	r8 = cmpbe r6, 2 ; Jan -> Feb or Feb -> Mar
+	send 4, r6
+	r8 = cmpeq r6, 1 ; Jan -> Feb
 	jnz 2f, r8
 0:
 	r1 = add r1, 0f - 0b
@@ -85,22 +354,12 @@ start:
 	jnz 1f, r8
 0:
 	r1 = add r1, 0f - 0b
-	r8 = cmpeq r6, 7 ; Jul -> Aug
-	jnz start, r8
-0:
-	r1 = add r1, 0f - 0b
-	r15 = sub 31 + 30, r15 ; Mar -> Apr, Apr -> May, May -> Jun, Jun -> Jul, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
+	r8 = cmpae r6, 8 ; Jul -> Aug, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
+	r8 = sub r6, r8
+	r8 = and r8, 1
+	r15 = sub 31, r8
 	jmp start
-0:
-2:
-	r1 = add r1, 0f - 0b
-	r8 = cmpeq r6, 1 ; Jan -> Feb
-	jnz 2f, r8
-0:
-	; Feb -> Mar
-	r1 = add r1, 0f - 0b
-	r15 = 31
-	jmp start
+	; It seems doing r15 = 31 + 30 - r15 may be the most optimal in term of number of operations though
 0:
 2:
 	; Jan -> Feb
@@ -112,13 +371,14 @@ start:
 	; We have passed 12 months
 	r1 = add r1, 0f - 0b
 	r6 = sub r6, 12
-	r15 = 31 ; Reset the number of days in a month as well
+	send 4, r6
 	r7 = add r7, 1
+	send 5, r7
+	r15 = 31
 compute_r14:
 	; Now compute the number of days in February
 	r14 = sub r14, 1
 	jnz not_bis, r14
-_compute_r14_end:
 0:
 	r1 = add r1, 0f - 0b
 	r14 = 4

@@ -383,6 +383,17 @@ int main(int argc, char **argv) {
 		
 		case 0b100000: set_dest(insn, regs, ram[get_arg1(insn, regs)]);  break; // load
 		case 0b100001: ram[get_arg1(insn, regs)] = get_arg2(insn, regs); break; // store
+		case 0b100010: // recv
+			if (!io_recv(get_arg1(insn, regs), get_dest_ptr(insn, regs))) {
+				std::cout << "Unsupported recv " << std::dec << get_arg1(insn, regs) << " instruction (at IP = " << std::dec << (ip - 1) << " = 0x" << std::hex << (ip - 1) << ")" << std::endl;
+			}
+			break;
+		case 0b100011: // send
+			if (!io_send(get_arg1(insn, regs), get_arg2(insn, regs))) {
+				std::cout << "Unsupported send " << std::dec << get_arg1(insn, regs) << ", " << get_arg2(insn, regs)
+				          << " instruction (at IP = " << std::dec << (ip - 1) << " = 0x" << std::hex << (ip - 1) << ")" << std::endl;
+			}
+			break;
 		
 		default:
 			std::cout << "IP " << std::dec << (ip - 1) << " (0x" << std::hex << (ip - 1) << ") has instruction "

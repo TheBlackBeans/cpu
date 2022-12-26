@@ -134,6 +134,7 @@ fn read_expr_mon_op(ast: BeansAST) -> ExprMonOp {
     let mut node = node!(ast);
     match_variant! {(node) {
     "Load" => ExprMonOp::Load,
+    "Recv" => ExprMonOp::Recv,
     }}
 }
 
@@ -273,6 +274,7 @@ fn read_stmt_bin_op(ast: BeansAST) -> StmtBinOp {
     let mut node = node!(ast);
     match_variant! {(node) {
     "Store" => StmtBinOp::Store,
+    "Send" => StmtBinOp::Send,
     "Jzo" => StmtBinOp::Jzo,
     "Jnzo" => StmtBinOp::Jnzo,
     }}

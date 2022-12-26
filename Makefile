@@ -90,6 +90,9 @@ out/vm-objs/main.o: vm/main.cpp vm/instruction.hpp vm/io_interface.h | out/vm-ob
 out/vm: out/vm-objs/main.o vm/stubs.c
 	@echo "Compiling the empty I/O VM"
 	@$(CC) $(CFLAGS) -lstdc++ -g -O2 -Wall -Wextra -o $@ out/vm-objs/main.o vm/stubs.c
+out/vm-clock: out/vm-objs/main.o vm/clock.c
+	@echo "Compiling the clock-specific I/O VM"
+	@$(CC) $(CFLAGS) -lstdc++ -g -O2 -Wall -Wextra -o $@ -pthread out/vm-objs/main.o vm/clock.c
 
 check/vm:
 	@echo "No VM check"

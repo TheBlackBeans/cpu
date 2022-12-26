@@ -90,10 +90,11 @@ the next two arguments $a_1$ and $a_2$, in this order, can be registers or
 immediates.
 
 \section*{Implementation details}
-\subsection*{RAM operations}
-\verb|load| and \verb|store| are encoded in the same way, except for the arity. This
-allows merging them into a single operation, with the arity feeding the \verb|we|
-flag of the RAM and register file modules.
+\subsection*{Miscellaneous operations}
+\verb|load| and \verb|store|, as well as \verb|recv| and \verb|send|, are encoded
+in the same way, except for the arity. This allows merging them into a single
+operation, with the arity feeding the \verb|we| flag of the RAM/port and register
+file modules.
 \subsection*{Comparison operation}
 The comparison operation's last three bits encore the actual comparison made.
 The first bit indicates the negation of the result, the second indicates whether
@@ -248,7 +249,7 @@ apply less than.
     \(\instr[7:6]\) & \(11\) & 2 bits\\
     \(\instr[11:8]\) & \(r_d\) & 4 bits\\
     \(\instr[15:12]\) & \(r_1\) & 4 bits\\
-    \(\instr[19:16]\) & \(r_2\) & 4 bits\\
+    \(\instr[31:28]\) & \(r_2\) & 4 bits\\
     \midrule
     \multicolumn{3}{c}{\(r_d = \op(i, r_2)\)}\\
     \(\instr[0:0]\) & \(1\) & 1 bits\\
@@ -302,10 +303,12 @@ apply less than.
     cmp\textit{cc} & 2 & \(11\;???\) & if \(a_1\;cc\;a_2\), \(r_d=1\),\\
                   &  &  & otherwise \(r_d=0\)\\
     \midrule
-    \multicolumn{3}{c}{RAM operation}\\
+    \multicolumn{3}{c}{Miscellaneous}\\
     \midrule
     load & 1 & \(10\;000\) & \(r_d=\mathrm{RAM}[a_1]\)\\
     store & 2 & \(10\;000\) & \(\mathrm{RAM}[a_1]=a_2\)\\
+    recv & 1 & \(10\;001\) & \(r_d=\mathrm{port}~a_1\)\\
+    send & 2 & \(10\;001\) & \(\mathrm{port}~a_1=a_2\)\\
     \bottomrule
   \end{tabular}
   \quad
