@@ -16,8 +16,6 @@
 ; 0: -- separation to count the correct number of cycles spent
 
 ; out/vm -f out/clock -n <ncycles> -r <r1> <r2> <r3> <r4> <r5> <r6> <r7> <r8> 0 0 <r11> <r12> <r13> <r14> <r15> <ip> -q --ifmt "%x%r1 %r2 %r3 %r4 %r5 %r6 %r7 %r8 %r11 %r12 %r13 %r14 %r15 %ip | %insn"$'\n'
-; Seconds transition: 999 0 0 0 0 0 0 0 0 0 0x1d 4 0x19 4 0x1f 6
-; After 1000*60*60*24*31 + 20 cycles: 0x0014 0x0000 0x0000 0x0000 0x001f 0x0000 0x0000 0x0001 0x0000 0x0000 0x001d 0x0004 0x0019 0x0004 0x001f 0x001c
 
 _init:
 	; Read year
