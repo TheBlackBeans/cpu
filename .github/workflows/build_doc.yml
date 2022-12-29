@@ -1,0 +1,19 @@
+name: Build documentation
+on: [push]
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+      - name: Compile the documentation
+        uses: xu-cheng/latex-action@v2
+        with:
+          working_directory: docs
+          root_file: instructionset.tex
+          latexmk_use_lualatex: true
+      - name: Deliver the documentation artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: instruction_set
+          path: docs/instructionset.pdf
