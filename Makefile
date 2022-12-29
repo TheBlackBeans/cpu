@@ -32,6 +32,8 @@ clean:
 
 out:
 	@mkdir out
+out/vm-objs: | out
+	@mkdir out/vm-objs
 
 # CPU-relevant stuff
 CPU_SOURCES := $(wildcard src/*.sv)
@@ -79,11 +81,18 @@ test/clock-nostop:
 
 # VM-relevant stuff
 VM_SOURCES := vm/main.cpp
-VM_HEADERS := vm/instruction.hpp
+VM_HEADERS := vm/instruction.hpp vm/io_interface.h
 
-out/vm: $(VM_SOURCES) $(VM_HEADERS) | out
-	@echo "Compiling the VM"
-	@$(CXX) $(CXXFLAGS) -g -O2 -Wall -Wextra -o $@ $(VM_SOURCES)
+out/vm-objs/main.o: vm/main.cpp vm/instruction.hpp vm/io_interface.h | out/vm-objs
+	@echo "Compiling the VM core"
+	@$(CXX) $(CXXFLAGS) -g -O2 -Wall -Wextra -c -o $@ vm/main.cpp
+
+out/vm: out/vm-objs/main.o vm/stubs.c
+	@echo "Compiling the empty I/O VM"
+	@$(CC) $(CFLAGS) -lstdc++ -g -O2 -Wall -Wextra -o $@ out/vm-objs/main.o vm/stubs.c
+out/vm-clock: out/vm-objs/main.o vm/clock.c
+	@echo "Compiling the clock-specific I/O VM"
+	@$(CC) $(CFLAGS) -lstdc++ -g -O2 -Wall -Wextra -o $@ -pthread out/vm-objs/main.o vm/clock.c
 
 check/vm:
 	@echo "No VM check"

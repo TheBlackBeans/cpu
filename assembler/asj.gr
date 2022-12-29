@@ -65,7 +65,8 @@ ExprBinOp ::=
 
 "an instruction code"
 ExprMonOp ::=
-  LOAD <Load>;
+  LOAD <Load>
+  RECV <Recv>;
 
 "an instruction code"
 StmtMonOp ::=
@@ -74,6 +75,7 @@ StmtMonOp ::=
 "an instruction code"
 StmtBinOp ::=
   STORE <Store>
+  SEND <Send>
   JZO <Jzo>
   JNZO <Jnzo>;
 

@@ -95,12 +95,14 @@ impl ExprBinOp {
 
 pub enum ExprMonOp {
     Load,
+    Recv,
 }
 
 impl ExprMonOp {
     pub fn code(&self) -> u32 {
         match self {
             Self::Load => 0b10_000,
+            Self::Recv => 0b10_001,
         }
     }
 }
@@ -111,6 +113,7 @@ pub enum StmtBinOp {
     Jnz,
     Jnzo,
     Store,
+    Send,
 }
 
 impl StmtBinOp {
@@ -121,6 +124,7 @@ impl StmtBinOp {
             Self::Jnz => 0b01_010,
             Self::Jnzo => 0b01_011,
             Self::Store => 0b10_000,
+            Self::Send => 0b10_001,
         }
     }
 }

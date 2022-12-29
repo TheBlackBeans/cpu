@@ -50,7 +50,9 @@ enum class InstructionType {
 	Cmpge = 0b111111,
 	
 	Load  = 0b100000,
+	Recv  = 0b100010,
 	Store = 0b100001,
+	Send  = 0b100011,
 	
 	Unknown = -1
 };
@@ -90,7 +92,9 @@ constexpr const char *to_string(InstructionType it) {
 	case InstructionType::Cmpge: return "cmpge";
 	
 	case InstructionType::Load:  return "load";
+	case InstructionType::Recv:  return "recv";
 	case InstructionType::Store: return "store";
+	case InstructionType::Send:  return "send";
 	
 	case InstructionType::Unknown:
 	default: return "???";
@@ -125,7 +129,9 @@ constexpr InstructionType to_instructiontype(int it) {
 	case static_cast<int>(InstructionType::Cmpge): return InstructionType::Cmpge;
 	
 	case static_cast<int>(InstructionType::Load):  return InstructionType::Load;
+	case static_cast<int>(InstructionType::Recv):  return InstructionType::Recv;
 	case static_cast<int>(InstructionType::Store): return InstructionType::Store;
+	case static_cast<int>(InstructionType::Send):  return InstructionType::Send;
 	
 	default: return InstructionType::Unknown;
 	}
@@ -143,6 +149,14 @@ using Registers = std::array<Register, 15>;
 constexpr Register get_reg(const Registers &regs, std::uint8_t idx) {
 	if (idx) return regs[idx - 1];
 	else return 0;
+}
+constexpr Register *get_reg_ptr(Registers &regs, std::uint8_t idx) {
+	if (idx) return &regs[idx - 1];
+	else return nullptr;
+}
+constexpr const Register *get_reg_ptr(const Registers &regs, std::uint8_t idx) {
+	if (idx) return &regs[idx - 1];
+	else return nullptr;
 }
 inline void set_reg(Registers &regs, std::uint8_t idx, Register val) {
 	if (idx) regs[idx - 1] = val;

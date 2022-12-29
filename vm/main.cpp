@@ -8,11 +8,15 @@
 #include <thread>
 
 #include "instruction.hpp"
+#include "io_interface.h"
 
 using used_clock = std::chrono::steady_clock;
 
 void set_dest(Instruction insn, Registers &regs, Register val) {
 	return set_reg(regs, (insn >> 8) & 0xF, val);
+}
+Register *get_dest_ptr(Instruction insn, Registers &regs) {
+	return get_reg_ptr(regs, (insn >> 8) & 0xF);
 }
 Register get_arg1(Instruction insn, Registers &regs) {
 	if (insn & 0b01000000) {
@@ -131,6 +135,12 @@ void display_formatted(const char *fmt, const Registers &regs, const Register &i
 		}
 	}
 	std::cout << std::flush;
+}
+
+bool failed; // Can be considered atomic
+
+extern "C" void request_stop(void) {
+	failed = true;
 }
 
 int main(int argc, char **argv) {
@@ -275,6 +285,10 @@ int main(int argc, char **argv) {
 				if (!format) format = iformat;
 				++i;
 			}
+		} else {
+			std::cout << "Unknown argument " << argv[i] << "\n\n";
+			help(argv[0]);
+			return 1;
 		}
 	}
 	if (!filename) {
@@ -303,15 +317,17 @@ int main(int argc, char **argv) {
 	f.close();
 	
 	if (!format) {
-		format = "%x"
-			"r0  = %r0\nr1  = %r1\nr2  = %r2\nr3  = %r3\nr4  = %r4\nr5  = %r5\nr6  = %r6\nr7  = %r7\n"
-			"r8  = %r8\nr9  = %r9\nr10 = %r10\nr11 = %r11\nr12 = %r12\nr13 = %r13\nr14 = %r14\nr15 = %r15\n"
-			"ip  = %ip\n%ram";
+		format = default_format(iformat);
 	}
 	
 	if (show_initialized) std::cout << "Read " << std::dec << rom.size() << " instructions" << std::endl;
 	
-	bool failed = false;
+	failed = false;
+	if (!io_init(format, iformat)) {
+		std::cout << "Failed to initialize I/O" << std::endl;
+		return 1;
+	}
+	
 	used_clock::time_point wait_end_time = used_clock::now();
 	for (unsigned long long niter = 0; (niter < maxiter) && !failed; ++niter) {
 		if (iformat) display_formatted(iformat, regs, ip, rom, ram);
@@ -331,7 +347,7 @@ int main(int argc, char **argv) {
 		case 0b000101: set_dest(insn, regs, get_arg1(insn, regs) * get_arg2(insn, regs)); break; // mul
 		case 0b000111: {
 			Register tmp = get_arg2(insn, regs);
-			if (tmp) set_dest(insn, regs, get_arg1(insn, regs) / get_arg2(insn, regs));
+			if (tmp) set_dest(insn, regs, get_arg1(insn, regs) / tmp);
 			else {
 				std::cout << "Division by zero at IP " << std::dec << (ip - 1) << " (0x"
 				          << std::hex << (ip - 1) << "): setting destination to 0" << std::endl;
@@ -340,7 +356,7 @@ int main(int argc, char **argv) {
 			break; } // div
 		case 0b001001: {
 			Register tmp = get_arg2(insn, regs);
-			if (tmp) set_dest(insn, regs, get_arg1(insn, regs) % get_arg2(insn, regs));
+			if (tmp) set_dest(insn, regs, get_arg1(insn, regs) % tmp);
 			else {
 				std::cout << "Division by zero at IP " << std::dec << (ip - 1) << " (0x"
 				          << std::hex << (ip - 1) << "): setting destination to 0" << std::endl;
@@ -367,6 +383,17 @@ int main(int argc, char **argv) {
 		
 		case 0b100000: set_dest(insn, regs, ram[get_arg1(insn, regs)]);  break; // load
 		case 0b100001: ram[get_arg1(insn, regs)] = get_arg2(insn, regs); break; // store
+		case 0b100010: // recv
+			if (!io_recv(get_arg1(insn, regs), get_dest_ptr(insn, regs))) {
+				std::cout << "Unsupported recv " << std::dec << get_arg1(insn, regs) << " instruction (at IP = " << std::dec << (ip - 1) << " = 0x" << std::hex << (ip - 1) << ")" << std::endl;
+			}
+			break;
+		case 0b100011: // send
+			if (!io_send(get_arg1(insn, regs), get_arg2(insn, regs))) {
+				std::cout << "Unsupported send " << std::dec << get_arg1(insn, regs) << ", " << get_arg2(insn, regs)
+				          << " instruction (at IP = " << std::dec << (ip - 1) << " = 0x" << std::hex << (ip - 1) << ")" << std::endl;
+			}
+			break;
 		
 		default:
 			std::cout << "IP " << std::dec << (ip - 1) << " (0x" << std::hex << (ip - 1) << ") has instruction "
@@ -375,6 +402,8 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}
+	
+	io_close();
 	
 	display_formatted(format, regs, ip, rom, ram);
 	std::cout << std::flush;

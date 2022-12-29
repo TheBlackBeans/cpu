@@ -4,28 +4,29 @@ syntax sysnumcpu_asj "\.asj$"
 comment ";"
 
 # Error color
-color magenta "."
+color brightred "."
 
+color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*([^ 	acdjlmorsx;]|a[dn]?\>|a[^dn]|a[dn]\>|a[dn][^d]|a[dn]d[a-zA-Z0-9_]|c(m(p[abegl]?)?)?\>|c[^m]|cm[^p]|cmp[^abegl]|cmp(a[^be]|b[^el]|e[^q]|n[^e]|[gl][^et])|cmp(a[be]|b[el]|eq|ne|[gl][et])[a-zA-Z0-9_]|di?\>|d[^i]|div[a-zA-Z0-9_]|j[^mnoz]|jm[^p]|jn[^z]|j(mp|(n?z)?o)[a-zA-Z0-9_]|jn?z[a-np-zA-Z0-9_]|l[^o]|lo[^a]|loa[^d]|load[a-zA-Z0-9_]|m[^ou]|mo[^d]|mu[^l]|m(od|ul)[a-zA-Z0-9_]|or[a-zA-Z0-9_]|r[^e]|re[^c]|rec[^v]|recv[a-zA-Z0-9_]|s[^etu]|se[^n]|sen[^d]|send[a-zA-Z0-9_]|st[^o]|sto[^r]|stor[^e]|store[a-zA-Z0-9_]|su[^b]|sub[a-zA-Z0-9_]|x[^o]|xo[^r]|xor[a-zA-Z0-9_])[^;]*"
 # Assigning instruction line with two operands
 color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(add|sub|mul|div|mod|and|or|xor|cmp(eq|ne|lt|le|gt|ge|ab|ae|bl|be))[[:space:]]+(r([0-9]|1[0-5])[[:space:]]*,[[:space:]]*[^ 	;][^;]*|[^;,]+,[[:space:]]*r([0-9]|1[0-5]))"
 # Assigning instruction line with one operand
-color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(load)[[:space:]]+[^ 	;][^;]+"
+color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(load|recv)[[:space:]]+[^ 	;][^;]*"
 # Non-assigning instruction line with two operands
-color normal "^[[:space:]]+(jn?zo?)[[:space:]]+(r([0-9]|1[0-5])[[:space:]]*,[[:space:]]*[^;]+|[^;,]+[[:space:]]*,[[:space:]]*r([0-9]|1[0-5]))"
+color normal "^[[:space:]]+(jn?zo?|store|send)[[:space:]]+(r([0-9]|1[0-5])[[:space:]]*,[[:space:]]*[^;]+|[^;,]+[[:space:]]*,[[:space:]]*r([0-9]|1[0-5]))"
 # Non-assigning instruction line with one operand
-color normal "^[[:space:]]+(jmp|jo|store)[[:space:]]+[^;]+"
+color normal "^[[:space:]]+(jmp|jo)[[:space:]]+[^,;]+"
 
 # Registers
 color blue "r([0-9]|1[0-5])"
 # Local labels forward/backward
 color cyan "\<[0-9][bf]\>"
-color brightcyan "(jmp|jo|jn?zo?)[[:space:]]+([_a-zA-Z][_a-zA-Z0-9]*|[0-9][bf])\>"
+color cyan "(jmp|jo|jn?zo?)[[:space:]]+([_a-zA-Z][_a-zA-Z0-9]*|[0-9][bf])\>"
 
 # Commands
-color brightwhite "\<(add|sub|mul|div|mod|and|or|xor|cmp(eq|ne|lt|le|gt|ge|ab|ae|bl|be)|load|jn?zo?|jmp|jo|store)\>"
+color brightwhite "\<(add|sub|mul|div|mod|and|or|xor|cmp(eq|ne|lt|le|gt|ge|ab|ae|bl|be)|load|recv|jn?zo?|jmp|jo|store|send)\>"
 
 # Labels
-color brightred "^([_a-zA-Z][_a-zA-Z0-9]*|[0-9]):"
+color green "^([_a-zA-Z][_a-zA-Z0-9]*|[0-9]):"
 
 # Comments
 color white "[[:space:]]*;.*$"
