@@ -50,7 +50,9 @@ class InstructionType(enum.Enum):
 	Cmpge = 0b111111
 	
 	Load  = 0b100000
+	Recv  = 0b100010
 	Store = 0b100001
+	Send  = 0b100011
 	
 	Unknown = -1
 	
@@ -61,7 +63,7 @@ class InstructionType(enum.Enum):
 			if cat.value == (self.value >> 4) & 0b11:
 				self._cat = cat
 				break
-		self._has_dest = (self._cat == Category.ArithmeticLogic) or (self._cat == Category.Comparison) or (i == 0b100000)
+		self._has_dest = (self._cat == Category.ArithmeticLogic) or (self._cat == Category.Comparison) or (i & 0b111101 == 0b100000)
 	
 	@property
 	def arity(self) -> Arity:
@@ -101,7 +103,9 @@ instructionTypeMap = {
 	InstructionType.Cmpge: "cmpge",
 	
 	InstructionType.Load:  "load",
+	InstructionType.Recv:  "recv",
 	InstructionType.Store: "store",
+	InstructionType.Send:  "send",
 	
 	InstructionType.Unknown: "???"
 }
