@@ -360,7 +360,7 @@ pub(crate) fn parse_to_ast(source: &Path) -> Result<AST> {
     )
     .unwrap()
     .unwrap();
-    let mut input = StringStream::from_file(source).unwrap().unwrap();
-    let ast = parser.parse(&mut lexer.lex(&mut input)).unwrap().unwrap();
+    let mut input = StringStream::from_file(source)?.unwrap();
+    let ast = parser.parse(&mut lexer.lex(&mut input))?.unwrap();
     read_ast(ast.tree)
 }
