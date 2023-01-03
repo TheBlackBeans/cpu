@@ -5,7 +5,7 @@ version = "0.1.0"
 
 [[bin]]
 name = "asj"
-path = "assembler/main.rs"
+path = "main.rs"
 
 [dependencies]
 anyhow = "1.0.66"
