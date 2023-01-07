@@ -1,26 +1,28 @@
 `default_nettype none
 
-module Ram #(parameter addr_size = 4,
-	     parameter cell_size = 16,
-	     parameter size = 2**addr_size)
-   (input logic clk,
-    input logic			 rstn,
-    input logic [addr_size-1:0]	 ra,
-    input logic [addr_size-1:0]	 wa,
-    input logic [cell_size-1:0]	 data,
-    input logic			 we,
-    output logic [cell_size-1:0] result);
-   
-   logic [cell_size-1:0]	 ram [size];
-   
-   always @(posedge clk or negedge rstn) begin
-      if (!rstn)
-	for (int i = 0; i < size; i++)
-	  ram[i] <= 0;
-      else begin
-	 result <= ram[ra];
-	 if (we)
-	   ram[wa] <= data;
-      end
-   end
-endmodule // Ram    
+module RAM
+	#(parameter
+	 addr_size = 16,
+	 data_size = 16
+	) (
+	 input logic clk, input logic rstn,
+	 input  logic                wenable,
+	 input  logic[addr_size-1:0] waddr,
+	 input  logic[data_size-1:0] wdata,
+	 input  logic[addr_size-1:0] raddr,
+	 output logic[data_size-1:0] rdata
+	);
+	
+	logic [data_size-1:0] ram[1 << addr_size];
+	
+	assign rdata = ram[raddr];
+	
+	always @(posedge clk or negedge rstn) begin
+		if (rstn) begin
+			if (wenable) ram[waddr] <= wdata;
+		end else begin
+			for (int i = 0; i < (1 << addr_size); i++)
+				ram[i] <= 0;
+		end
+	end
+endmodule // RAM

@@ -1,27 +1,32 @@
 `default_nettype none
 
-module Regfile
-  (input logic clk,
-   input logic	       rstn,
-   input logic [3:0]   r1,
-   input logic [3:0]   r2,
-   input logic [3:0]   rd,
-   input logic [15:0]  rddata,
-   input logic	       we,
-   output logic [15:0] r1data,
-   output logic [15:0] r2data);
-   
-   logic [15:0]	regfile [16];
-   
-   always @(posedge clk or negedge rstn) begin
-      if (!rstn)
-	for (int i = 0; i < 16; i++)
-	  regfile[i] <= 0;
-      else begin
-	 r1data <= regfile[r1];
-	 r2data <= regfile[r2];
-	 if (we && !rd)
-	   regfile[rd] <= rddata;
-      end
-   end
-endmodule // Regfile
+module RegFile#(parameter
+	 addr_size = 4,
+	 data_size = 16
+	) (
+	 input logic clk, input logic rstn,
+	 input  logic                wenable,
+	 input  logic[addr_size-1:0] waddr,
+	 input  logic[data_size-1:0] wdata,
+	 input  logic[addr_size-1:0] raddr1,
+	 input  logic[addr_size-1:0] raddr2,
+	 output logic[data_size-1:0] rdata1,
+	 output logic[data_size-1:0] rdata2
+	);
+	
+	logic [data_size-1:0] regs[1 << addr_size];
+	
+	assign rdata1 = raddr1 != 0 ? regs[raddr1] : 0;
+	assign rdata2 = raddr2 != 0 ? regs[raddr2] : 0;
+	
+	always @(negedge clk or negedge rstn) begin
+		if (rstn) begin
+			// $display("[REGFILE] Clock went to 0, writing to %04b: %b, %016b -> %016b", waddr, wenable, regs[waddr], wdata);
+			if (wenable) regs[waddr] <= wdata;
+		end else begin
+			// $display("[REGFILE] Rstn went to 0, clearing memory");
+			for (int i = 0; i < (1 << addr_size); i++)
+				regs[i] <= 0;
+		end
+	end
+endmodule // RegFile
