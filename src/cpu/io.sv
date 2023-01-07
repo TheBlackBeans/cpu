@@ -42,6 +42,7 @@ module MiscManager#(parameter
 	
 	always @(posedge clk or negedge rstn) begin
 		if (rstn) begin
+			// Note: this delay is REQUIRED for iverilog to order execution properly...
 			#10 // $display("[  IO   ] Clock went to 1: op %04b + cs %b", op, cs);
 			case (op)
 			4'b0000: begin
