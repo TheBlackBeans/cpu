@@ -40,8 +40,8 @@ void print_val(int size, bool display, uint16_t data) {
 void update_output() {
 	pthread_mutex_lock(&iomut);
 	printf("\e[G%c  %c   ", button_selected[0] ? '#' : ' ', button_selected[1] ? '#' : ' ');
-	print_val(2, port_received[3], received_data[3] + 1); printf("/");
-	print_val(2, port_received[4], received_data[4] + 1); printf("/");
+	print_val(2, port_received[3], received_data[3]); printf("/");
+	print_val(2, port_received[4], received_data[4]); printf("/");
 	print_val(4, port_received[5], received_data[5]); printf("  ");
 	print_val(2, port_received[2], received_data[2]); printf(":");
 	print_val(2, port_received[1], received_data[1]); printf(":");

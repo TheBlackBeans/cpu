@@ -149,7 +149,7 @@ module Main;
 		#1 // $display("[ MAIN  ] rstn will go to 1, ALU %b  COMP %b MISC %b JMP %b/%b", alu_out, comp_out, misc_cs, maybe_jmp, ip_jmp);
 		rstn = 1;
 		
-		#3036600 $display("Finishing the program, 30366 instructions were executed");
+		#3048400 $display("Finishing the program, 30484 instructions were executed");
 		$finish;
 	end
 	

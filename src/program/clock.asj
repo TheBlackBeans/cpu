@@ -87,7 +87,12 @@ read_years_11:
 	r11 = add 28, r8
 	
 	; Read month
+	r6 = 1
 read_months:
+	r8 = cmpab r6, 12
+	jz 0f, r8
+	r6 = 1
+0:
 	send 4, r6
 read_months_00:
 	r8 = recv 0
@@ -102,10 +107,6 @@ read_months_10:
 	jnz read_months_10, r8
 	r6 = add r6, r6
 	r6 = add r6, 1
-	r8 = cmpae r6, 12
-	jz 0f, r8
-	r6 = 0
-0:
 	jmp read_months
 	
 read_months_01:
@@ -114,10 +115,6 @@ read_months_01:
 	r8 = recv 0
 	jnz read_months_01, r8
 	r6 = add r6, r6
-	r8 = cmpae r6, 12
-	jz 0f, r8
-	r6 = 0
-0:
 	jmp read_months
 	
 read_months_11:
@@ -127,18 +124,23 @@ read_months_11:
 	jnz read_months_11, r8
 	
 	; Compute number of days in the current month
-	r8 = cmpeq r6, 1 ; Feb
+	r8 = cmpeq r6, 2 ; Feb
 	jz 2f, r8
 	r15 = r11
 	jmp 1f
 2:
-	r8 = cmpae r6, 7 ; Aug, Sep, Oct, Nov, Dec
+	r8 = cmpae r6, 8 ; Aug, Sep, Oct, Nov, Dec
 	r8 = sub r6, r8
-	r8 = and r8, 1   ; Apr, Jun, Sep, Nov
-	r15 = sub 31, r8
+	r8 = and r8, 1   ; Jan, Mar, May, Jul, Aug, Oct, Dec
+	r15 = add 30, r8
 1:
 	; Receive number of days
+	r5 = 1
 read_days:
+	r8 = cmpab r5, r15
+	jz 0f, r8
+	r5 = 1
+0:
 	send 3, r5
 read_days_00:
 	r8 = recv 0
@@ -153,10 +155,6 @@ read_days_10:
 	jnz read_days_10, r8
 	r5 = add r5, r5
 	r5 = add r5, 1
-	r8 = cmpae r5, r15
-	jz 0f, r8
-	r5 = 0
-0:
 	jmp read_days
 	
 read_days_01:
@@ -165,10 +163,6 @@ read_days_01:
 	r8 = recv 0
 	jnz read_days_01, r8
 	r5 = add r5, r5
-	r8 = cmpae r5, r15
-	jz 0f, r8
-	r5 = 0
-0:
 	jmp read_days
 	
 read_days_11:
@@ -334,7 +328,7 @@ start:
 	send 2, r4
 	r5 = add r5, 1
 	send 3, r5
-	r8 = cmpae r5, r15
+	r8 = cmpab r5, r15
 	jz start, r8
 	
 0:
@@ -344,18 +338,18 @@ start:
 	send 3, r5
 	r6 = add r6, 1
 	send 4, r6
-	r8 = cmpeq r6, 1 ; Jan -> Feb
+	r8 = cmpeq r6, 2 ; Jan -> Feb
 	jnz 2f, r8
 0:
 	r1 = add r1, 0f - 0b
-	r8 = cmpae r6, 12 ; Dec -> Jan
+	r8 = cmpab r6, 12 ; Dec -> Jan
 	jnz 1f, r8
 0:
 	r1 = add r1, 0f - 0b
-	r8 = cmpae r6, 8 ; Jul -> Aug, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
+	r8 = cmpab r6, 8 ; Jul -> Aug, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
 	r8 = sub r6, r8
 	r8 = and r8, 1
-	r15 = sub 31, r8
+	r15 = add 30, r8
 	jmp start
 	; It seems doing r15 = 31 + 30 - r15 may be the most optimal in term of number of operations though
 0:
