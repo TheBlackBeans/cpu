@@ -27,13 +27,41 @@ InstructionOrLabel ::=
 "an instruction"
 Instruction ::=
   REGISTER.0@dest EQ Expression@value <Assignment>
-  Statement@stmt <Statement>;
+  Statement@stmt <Statement>
+  RAM LBRACKET Arg@addr RBRACKET EQ Arg@value <
+    Statement
+    stmt: Statement {
+      Diadic
+      op: StmtBinOp {Store}
+      left: addr
+      right: value
+    }
+  >
+  PORT Arg@addr EQ Arg@value <
+    Statement
+    stmt: Statement {
+      Diadic
+      op: StmtBinOp {Send}
+      left: addr
+      right: value
+    }
+  >;
 
 "an expression"
 Expression ::=
   Arg@right <Diadic op: ExprBinOp {Add} left: Arg {Register value: "0"}>
   ExprMonOp@op Arg@arg <Monadic>
-  ExprBinOp@op Arg@left COMMA Arg@right <Diadic>;
+  ExprBinOp@op Arg@left COMMA Arg@right <Diadic>
+  RAM LBRACKET Arg@addr RBRACKET <
+    Monadic
+    op: ExprMonOp {Load}
+    arg: addr
+  >
+  PORT Arg@addr <
+    Monadic
+    op: ExprMonOp {Recv}
+    arg: addr
+  >;
 
 "a statement"
 Statement ::=

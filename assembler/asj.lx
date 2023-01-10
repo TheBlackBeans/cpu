@@ -46,6 +46,11 @@ SLASH ::= /
 INT ::= ([-+]?\d+)
 COMMA ::= ,
 
+LBRACKET ::= \[
+RBRACKET ::= \]
+keyword RAM ::= RAM
+keyword PORT ::= port
+
 LABEL ::= ([_a-zA-Z][_a-zA-Z0-9]*)
 LOCAL ::= (\d)
 FORWARD ::= (\d)f

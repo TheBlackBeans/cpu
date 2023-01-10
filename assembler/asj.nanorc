@@ -10,7 +10,10 @@ color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*([^ 	acdjlmor
 # Assigning instruction line with two operands
 color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(add|sub|mul|div|mod|and|or|xor|cmp(eq|ne|lt|le|gt|ge|ab|ae|bl|be))[[:space:]]+(r([0-9]|1[0-5])[[:space:]]*,[[:space:]]*[^ 	;][^;]*|[^;,]+,[[:space:]]*r([0-9]|1[0-5]))"
 # Assigning instruction line with one operand
-color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(load|recv)[[:space:]]+[^ 	;][^;]*"
+color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*(load|recv|port)[[:space:]]+[^ 	;][^;]*"
+color normal "^[[:space:]]+RAM[[:space:]]*\[[[:space:]]*r?([0-9]|1[0-5])[[:space:]]*\][[:space:]]*=[[:space:]]*[^ 	;][^;]*"
+color normal "^[[:space:]]+r([0-9]|1[0-5])[[:space:]]*=[[:space:]]*RAM[[:space:]]*\[[[:space:]]*[^ 	;][^;]*\]"
+color normal "^[[:space:]]+port[[:space:]]+r?([0-9]|1[0-5])[[:space:]]*=[[:space:]]*[^ 	;][^;]*"
 # Non-assigning instruction line with two operands
 color normal "^[[:space:]]+(jn?zo?|store|send)[[:space:]]+(r([0-9]|1[0-5])[[:space:]]*,[[:space:]]*[^;]+|[^;,]+[[:space:]]*,[[:space:]]*r([0-9]|1[0-5]))"
 # Non-assigning instruction line with one operand
