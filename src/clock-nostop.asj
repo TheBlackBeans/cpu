@@ -34,17 +34,17 @@ read_years: ; Next binary digit
 	r11 = mul r8, 4
 	r12 = sub r12, r11
 0:
-	send 5, r7
+	port 5 = r7
 read_years_00:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_years_01, r8
-	r8 = recv 1
+	r8 = port 1
 	jz read_years_00, r8
 	
 read_years_10:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_years_11, r8
-	r8 = recv 1
+	r8 = port 1
 	jnz read_years_10, r8
 	r7 = add r7, r7
 	r7 = add r7, 1
@@ -56,18 +56,18 @@ read_years_10:
 	jmp read_years
 	
 read_years_01:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_years_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_years_01, r8
 	r7 = add r7, r7
 	r14 = add r14, r14
 	jmp read_years
 	
 read_years_11:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_years_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_years_11, r8
 	
 	; Now compute r11
@@ -86,17 +86,17 @@ read_years_11:
 	
 	; Read month
 read_months:
-	send 4, r6
+	port 4 = r6
 read_months_00:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_months_01, r8
-	r8 = recv 1
+	r8 = port 1
 	jz read_months_00, r8
 	
 read_months_10:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_months_11, r8
-	r8 = recv 1
+	r8 = port 1
 	jnz read_months_10, r8
 	r6 = add r6, r6
 	r6 = add r6, 1
@@ -107,9 +107,9 @@ read_months_10:
 	jmp read_months
 	
 read_months_01:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_months_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_months_01, r8
 	r6 = add r6, r6
 	r8 = cmpae r6, 12
@@ -119,9 +119,9 @@ read_months_01:
 	jmp read_months
 	
 read_months_11:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_months_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_months_11, r8
 	
 	; Compute number of days in the current month
@@ -137,17 +137,17 @@ read_months_11:
 1:
 	; Receive number of days
 read_days:
-	send 3, r5
+	port 3 = r5
 read_days_00:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_days_01, r8
-	r8 = recv 1
+	r8 = port 1
 	jz read_days_00, r8
 	
 read_days_10:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_days_11, r8
-	r8 = recv 1
+	r8 = port 1
 	jnz read_days_10, r8
 	r5 = add r5, r5
 	r5 = add r5, 1
@@ -158,9 +158,9 @@ read_days_10:
 	jmp read_days
 	
 read_days_01:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_days_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_days_01, r8
 	r5 = add r5, r5
 	r8 = cmpae r5, r15
@@ -170,9 +170,9 @@ read_days_01:
 	jmp read_days
 	
 read_days_11:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_days_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_days_11, r8
 	
 	; Read hour
@@ -181,34 +181,34 @@ read_hour:
 	jz 0f, r8
 	r4 = 0
 0:
-	send 2, r4
+	port 2 = r4
 read_hour_00:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_hour_01, r8
-	r8 = recv 1
+	r8 = port 1
 	jz read_hour_00, r8
 	
 read_hour_10:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_hour_11, r8
-	r8 = recv 1
+	r8 = port 1
 	jnz read_hour_10, r8
 	r4 = add r4, r4
 	r4 = add r4, 1
 	jmp read_hour
 	
 read_hour_01:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_hour_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_hour_01, r8
 	r4 = add r4, r4
 	jmp read_hour
 	
 read_hour_11:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_hour_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_hour_11, r8
 	
 	; Read minutes
@@ -217,34 +217,34 @@ read_mins:
 	jz 0f, r8
 	r3 = 0
 0:
-	send 1, r3
+	port 1 = r3
 read_mins_00:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_mins_01, r8
-	r8 = recv 1
+	r8 = port 1
 	jz read_mins_00, r8
 	
 read_mins_10:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_mins_11, r8
-	r8 = recv 1
+	r8 = port 1
 	jnz read_mins_10, r8
 	r3 = add r3, r3
 	r3 = add r3, 1
 	jmp read_mins
 	
 read_mins_01:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_mins_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_mins_01, r8
 	r3 = add r3, r3
 	jmp read_mins
 	
 read_mins_11:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_mins_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_mins_11, r8
 	
 	; Read seconds
@@ -253,35 +253,35 @@ read_secs:
 	jz 0f, r8
 	r2 = 0
 0:
-	send 0, r2
+	port 0 = r2
 read_secs_00:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_secs_01, r8
-	r8 = recv 1
+	r8 = port 1
 	jz read_secs_00, r8
 	
 read_secs_10:
-	r8 = recv 0
+	r8 = port 0
 	jnz read_secs_11, r8
-	r8 = recv 1
+	r8 = port 1
 	jnz read_secs_10, r8
 	r2 = add r2, r2
 	r2 = add r2, 1
 	jmp read_secs
 	
 read_secs_01:
-	r8 = recv 1
+	r8 = port 1
 	jnz read_secs_11, r8
-	r8 = recv 0
+	r8 = port 0
 	jnz read_secs_01, r8
 	r2 = add r2, r2
 	jmp read_secs
 	
 read_secs_11:
 	; We don't need to wait for the user to release the buttons
-	;r8 = recv 1
+	;r8 = port 1
 	;jnz read_secs_11, r8
-	;r8 = recv 0
+	;r8 = port 0
 	;jnz read_secs_11, r8
 	
 	jmp start ; Finished initialization
@@ -290,39 +290,39 @@ not_bis:
 	r11 = 28
 start:
 	r2 = add r2, 1
-	send 0, r2
+	port 0 = r2
 	r8 = cmpae r2, 60
 	jz start, r8
 	
 	; We have passed 60 second
 	r2 = sub r2, 60
-	send 0, r2
+	port 0 = r2
 	r3 = add r3, 1
-	send 1, r3
+	port 1 = r3
 	r8 = cmpae r3, 60
 	jz start, r8
 	
 	; We have passed 60 minutes
 	r3 = sub r3, 60
-	send 1, r3
+	port 1 = r3
 	r4 = add r4, 1
-	send 2, r4
+	port 2 = r4
 	r8 = cmpae r4, 24
 	jz start, r8
 	
 	; We have passed 24 hours
 	r4 = sub r4, 24
-	send 2, r4
+	port 2 = r4
 	r5 = add r5, 1
-	send 3, r5
+	port 3 = r5
 	r8 = cmpae r5, r15
 	jz start, r8
 	
 	; We have passed <r15> days
 	r5 = sub r5, r15
-	send 3, r5
+	port 3 = r5
 	r6 = add r6, 1
-	send 4, r6
+	port 4 = r6
 	r8 = cmpeq r6, 1 ; Jan -> Feb
 	jnz 2f, r8
 	r8 = cmpae r6, 12 ; Dec -> Jan
@@ -340,9 +340,9 @@ start:
 1:
 	; We have passed 12 months
 	r6 = sub r6, 12
-	send 4, r6
+	port 4 = r6
 	r7 = add r7, 1
-	send 5, r7
+	port 5 = r7
 	r15 = 31
 compute_r14:
 	; Now compute the number of days in February
