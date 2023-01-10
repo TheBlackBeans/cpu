@@ -1,2 +1,2 @@
-../src/reg.sv
+../../src/cpu/reg.sv
 reg/basic4.txt@Basic 4-bit register@reg/basic4.sv

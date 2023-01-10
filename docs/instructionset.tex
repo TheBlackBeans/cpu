@@ -96,10 +96,11 @@ in the same way, except for the arity. This allows merging them into a single
 operation, with the arity feeding the \verb|we| flag of the RAM/port and register
 file modules.
 \subsection*{Comparison operation}
-The comparison operation's last three bits encore the actual comparison made.
+The comparison operation's last three bits encode the actual comparison being made.
 The first bit indicates the negation of the result, the second indicates whether
 the arguments are considered as signed, the last number indicates whether we
 apply less than.
+
 \begin{figure}[b]
   \label{fig:instrs}
   \begin{scalepicture}{\textwidth}

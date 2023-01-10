@@ -1,4 +1,4 @@
--g2012 ../src/alu.sv
+-g2012 ../../src/cpu/alu.sv
 alu/addition.txt@Addition@alu/addition.sv
 alu/subtraction.txt@Subtraction@alu/subtraction.sv
 alu/multiplication.txt@Multiplication@alu/multiplication.sv
