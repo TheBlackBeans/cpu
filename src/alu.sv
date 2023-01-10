@@ -2,9 +2,9 @@
 
 module ALU #(parameter integer CELL_SIZE = 16)
    (input logic [2:0] op,
-    input logic [CELL_SIZE - 1 : 0]  lhs,
-    input logic [CELL_SIZE - 1 : 0]  rhs,
-    output logic [CELL_SIZE - 1 : 0] result);
+    input logic signed [CELL_SIZE - 1 : 0]  lhs,
+    input logic signed [CELL_SIZE - 1 : 0]  rhs,
+    output logic signed [CELL_SIZE - 1 : 0] result);
    
    always @* begin
       case (op)
