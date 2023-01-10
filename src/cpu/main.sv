@@ -150,13 +150,10 @@ module Main;
 		#1 rstn = 0;
 		#1 // $display("[ MAIN  ] rstn will go to 1, ALU %b  COMP %b MISC %b JMP %b/%b", alu_out, comp_out, misc_cs, maybe_jmp, ip_jmp);
 		rstn = 1;
-		
-		#3048400 $display("Finishing the program, 30484 instructions were executed");
-		$finish;
 	end
 	
    always #50 begin // 0.5ms, so the clock runs at 1kHz.
-	  $display("WAIT");
+	  $display("WAIT");			// Don't try to understand...
 	  $fflush();
 	  
 	  $fgetc(STDIN);

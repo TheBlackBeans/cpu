@@ -45,6 +45,12 @@
             rustPackages.clippy
             rust-analyzer
             beans.defaultPackage.${system}
+            (python3.withPackages (pypkgs: with pypkgs; [
+              urwid
+              ptpython
+            ]))
+            nodePackages.pyright
+            ncurses
           ];
         };
       });
