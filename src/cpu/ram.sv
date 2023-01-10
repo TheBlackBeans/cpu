@@ -17,7 +17,7 @@ module RAM
 	
 	assign rdata = ram[raddr];
 	
-	always @(posedge clk or negedge rstn) begin
+	always @(negedge clk or negedge rstn) begin
 		if (rstn) begin
 			if (wenable) ram[waddr] <= wdata;
 		end else begin

@@ -1,0 +1,2 @@
+-g2012 ../../src/cpu/ram.sv
+ram/basic.txt@Basic RAM@ram/basic.sv

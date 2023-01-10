@@ -32,4 +32,10 @@ comparison:
 				; RAM operations
 ram:
 	r14 = load 1717
+	r14 = RAM[1717]
 	store 1817, r15
+	RAM[1817] = r15
+	r14 = recv 1717
+	r14 = port 1717
+	send 1817, r15
+	port 1817 = r15
