@@ -3,6 +3,8 @@
 
 module Main;
 	parameter integer rom_size = 2**8;
+   parameter integer  STDIN = 32'h8000_0000;
+   
 	logic clk;
 	logic rstn;
 	logic [31:0] rom[rom_size];
@@ -153,7 +155,11 @@ module Main;
 		$finish;
 	end
 	
-	always #50 begin // 0.5ms, so the clock runs at 1kHz.
+   always #50 begin // 0.5ms, so the clock runs at 1kHz.
+	  $display("WAIT");
+	  $fflush();
+	  
+	  $fgetc(STDIN);
 		clk = ~clk;
 		if (clk) begin
 			#0 if (ip <= 256)

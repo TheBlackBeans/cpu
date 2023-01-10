@@ -55,10 +55,13 @@ module MiscManager#(parameter
 			// FIXME: I/O ports
 			4'b0010: begin
 				if (cs) begin
-					//#0 $display("%0d> ", port);
+					#0 $display("%0d> ", port);
+				   $fflush();
+				   
 					char = $fgetc(STDIN)-48;
 					while (char != 0 && char != 1 && char != 2)
 						char = $fgetc(STDIN)-48;
+				   while ($fgetc(STDIN) != 10) ;
 					if (char == 2) $finish;
 					result = char;
 					// $display("[  IO   ] Recv %016b from port %016b", result, port);
