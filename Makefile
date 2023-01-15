@@ -22,7 +22,7 @@ test: test/cpu test/vm test/vm-clock test/asj test/clock test/clock-nostop
 .PHONY: test
 
 run: out/cpu
-	@out/cpu
+	@python src/wrappers/clock.py
 .PHONY: run
 
 clean:
