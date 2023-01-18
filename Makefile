@@ -18,11 +18,11 @@ doc: out/instructionset.pdf
 check: check/cpu check/asj
 .PHONY: check
 
-test: test/cpu test/vm test/vm-clock test/asj test/clock test/clock-nostop
+test: test/cpu test/vm test/vm-clock test/asj test/clock
 .PHONY: test
 
 run: out/cpu
-	@python src/wrappers/clock.py
+	@python src/scripts/clock.py
 .PHONY: run
 
 clean:
@@ -127,10 +127,7 @@ check/clock check/clock-nostop:
 	@echo "Checking is made by compiling the program"
 .PHONY: check/clock check/clock-nostop
 
-test/clock:
-	@echo "No clock program test available"
+test/clock: out/cpu out/clock out/clock-nostop
+	@grep "clock-nostop" src/cpu/main.sv >/dev/null 2>&1 && echo "Testing the clock-nostop program" || echo "Testing the clock program"
+	@for f in $$(ls tests/clock/*); do if [[ "$$f" =~ ^tests/clock/[0-9]+_[0-9]+_[0-9]+_[0-9]+_[0-9]+_[0-9]+_[0-9]+$$ ]]; then if ! cmp --quiet <(tests/clock/clock_test.py $$(echo "$$f" | sed 's|tests/clock/||g; s/_/ /g')) "$$f"; then echo "Failed $$f"; fi; fi; done
 .PHONY: test/clock
-
-test/clock-nostop:
-	@echo "No clock program test available"
-.PHONY: test/clock-nostop
