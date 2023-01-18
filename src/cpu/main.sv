@@ -29,10 +29,13 @@ module Main;
 		rstn = 1;
 	end
 	
+	int c;
+	
 	always #50 begin // 0.5ms, so the clock runs at 1kHz.
 		$display("WAIT"); // Don't try to understand...
 		$fflush();
-		$fgetc(STDIN);
+		c = $fgetc(STDIN);
+		if (c == 50) $finish;
 		
 		clk = ~clk;
 		if (clk) begin

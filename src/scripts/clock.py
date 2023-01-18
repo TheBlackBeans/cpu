@@ -4,6 +4,9 @@ from time import sleep
 import datetime
 import urwid, urwid.curses_display
 
+def extend_sint(s, l):
+    return (("0" * (l - len(s))) + s) if len(s) < l else s
+
 class State:
     def __init__(self):
         self.a = False
@@ -16,6 +19,8 @@ class Wrapper(Thread):
         self._label = label
         self._loop = loop
         self.stop = False
+        self._time = ["  "] * 6
+        self._time[5] = "    "
     def run(self):
         with Popen(
                 ["out/cpu"],
@@ -37,18 +42,24 @@ class Wrapper(Thread):
                         sleep(delay)
                     f.stdin.write("\n".encode())
                     f.stdin.flush()
-                elif line == "0>":
+                elif line == "RECV 0":
                     f.stdin.write((("1" if self._state.a else "0") + "\n").encode())
                     f.stdin.flush()
-                elif line == "1>":
+                elif line == "RECV 1":
                     f.stdin.write((("1" if self._state.z else "0") + "\n").encode())
                     f.stdin.flush()
-                else:
-                    self._label.set_text(line)
+                elif line.startswith("SEND "):
+                    vals = line.split(' ')
+                    self._time[int(vals[1])] = extend_sint(vals[2], 4 if vals[1] == "5" else 2)
+                    self._label.set_text(f"{self._time[3]}/{self._time[4]}/{self._time[5]}  {self._time[2]}:{self._time[1]}:{self._time[0]}")
                     self._loop.draw_screen()
+                else:
+                    pass
+            if f.poll() is None:
+                f.communicate("2\n".encode())
 
 state = State()
-label = urwid.Text("bonjour")
+label = urwid.Text("  /  /        :  :  ")
 boutons = urwid.Text("    ")
 
 def update_state(key):
