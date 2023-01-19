@@ -4,13 +4,13 @@ from subprocess import Popen, PIPE, STDOUT
 import sys
 
 if len(sys.argv) != 8:
-    print("Usage: tests/clock/clock_test.py <n. SEND> <init years> ... <init seconds>\nInvalid sys.argv length of " + str(len(sys.argv)))
+    print("Usage: " + sys.argv[0] + " <n. SEND> <init years> ... <init seconds>\nInvalid sys.argv length of " + str(len(sys.argv)))
     sys.exit(1)
 
 try:
     inputs = list(map(int, sys.argv[1:]))
 except ValueError as e:
-    print("Usage: tests/clock/clock_test.py <n. SEND> <init years> ... <init seconds>\nFailed to convert an argument to an int:\n" + str(e))
+    print("Usage: " + sys.argv[0] + " <n. SEND> <init years> ... <init seconds>\nFailed to convert an argument to an int:\n" + str(e))
     sys.exit(1)
 
 class Bit: pass
