@@ -25,57 +25,42 @@ def extend_sint(s, l):
 def transform_bits_seq(seq):
     send0 = "0\n".encode()
     send1 = "1\n".encode()
-    send2 = "2\n".encode()
     port = yield None
     
+    def send_data(data):
+        nonlocal port
+        yield data
+        port = yield None
+    def send(data):
+        if data[1 - port]:
+            port1 = port
+            while port == port1:
+                yield from send_data(send1 if data[port] else send0)
+            yield from send_data(send1 if data[port] else send0)
+        else:
+            yield from send_data(send1 if data[port] else send0)
+        port1 = port
+        while port == port1:
+            yield from send_data(send0)
+        yield from send_data(send0)
     for b in seq:
         if b is newblock:
-            port1 = port
-            while port == port1:
-                yield send1
-                port = yield None
-            yield send1
-            port = yield None
-            port1 = port
-            while port == port1:
-                yield send0
-                port = yield None
-            yield send0
-            port = yield None
+            yield from send([True, True])
         elif b is newblock2:
-            port1 = port
-            while port == port1:
-                yield send1
-                port = yield None
+            if port == 0:
+                while port == 0:
+                    yield from send_data(send1)
+            else:
+                while port == 1:
+                    yield from send_data(send1)
             yield send1
             return
         elif b is bit0:
-            while port != 0:
-                yield send0
-                port = yield None
-            yield send1
-            port = yield None
-            port1 = port
-            while port == port1:
-                yield send0
-                port = yield None
-            yield send0
-            port = yield None
+            yield from send([True, False])
         elif b is bit1:
-            while port != 1:
-                yield send0
-                port = yield None
-            yield send1
-            port = yield None
-            port1 = port
-            while port == port1:
-                yield send0
-                port = yield None
-            yield send0
-            port = yield None
+            yield from send([False, True])
         else:
             raise Exception("Invalid bit object")
-    yield send2
 
 def transform_number(i):
     if i == 0:
@@ -154,6 +139,8 @@ with Popen(
             f.stdin.write("\n".encode())
             f.stdin.flush()
         elif line == "RECV 0":
+            if setup_done:
+                raise Exception("Setup is already done, receiving 0")
             f.stdin.write(tbs.send(0))
             f.stdin.flush()
             try:
@@ -161,6 +148,8 @@ with Popen(
             except StopIteration:
                 setup_done = True
         elif line == "RECV 1":
+            if setup_done:
+                raise Exception("Setup is already done, receiving 1")
             f.stdin.write(tbs.send(1))
             f.stdin.flush()
             try:
@@ -178,88 +167,3 @@ with Popen(
             print("## " + line)
     
     f.communicate("2\n".encode())
-
-
-
-
-
-
-
-sys.exit(0)
-azerty.No = error
-
-class State:
-    def __init__(self, bits_seq):
-        self._bits_seq = bits_seq
-date = []
-
-class Wrapper(Thread):
-    def __init__(self, state, label, loop):
-        super().__init__()
-        self._state = state
-        self._label = label
-        self._loop = loop
-        self.stop = False
-        self._time = ["  "] * 6
-        self._time[5] = "    "
-    def run(self):
-        with Popen(
-                ["out/cpu"],
-                stdin=PIPE,
-                stdout=PIPE,
-                stderr=STDOUT,
-        ) as f:
-            if f.stdout is None or f.stdin is None:
-                exit(1)
-            target = datetime.datetime.now()
-            while not self.stop:
-                line = f.stdout.readline().decode("utf-8").strip()
-                if f.poll() is not None:
-                    break
-                if line == "WAIT":
-                    target += datetime.timedelta(microseconds=500)
-                    delay = (target - datetime.datetime.now()).total_seconds()
-                    if delay > 0:
-                        sleep(delay)
-                    f.stdin.write("\n".encode())
-                    f.stdin.flush()
-                elif line == "RECV 0":
-                    f.stdin.write((("1" if self._state.a else "0") + "\n").encode())
-                    f.stdin.flush()
-                elif line == "RECV 1":
-                    f.stdin.write((("1" if self._state.z else "0") + "\n").encode())
-                    f.stdin.flush()
-                elif line.startswith("SEND "):
-                    vals = line.split(' ')
-                    self._time[int(vals[1])] = extend_sint(vals[2], 4 if vals[1] == "5" else 2)
-                    self._label.set_text(f"{self._time[3]}/{self._time[4]}/{self._time[5]}  {self._time[2]}:{self._time[1]}:{self._time[0]}")
-                    self._loop.draw_screen()
-                else:
-                    pass
-            if f.poll() is None:
-                f.communicate("2\n".encode())
-
-state = State()
-label = urwid.Text("  /  /        :  :  ")
-boutons = urwid.Text("    ")
-
-def update_state(key):
-    if key in {'a', 'A'}:
-        state.a = not state.a
-    elif key in {'z', 'Z'}:
-        state.z = not state.z
-    elif key in {'q', 'Q'}:
-        wrapper.stop = True
-        raise urwid.ExitMainLoop()
-    boutons.set_text(("#" if state.a else " ") + "  " + ("#" if state.z else " "))
-
-pile = urwid.Pile([label, boutons])
-top = urwid.Filler(pile, valign='top')
-loop = urwid.MainLoop(
-    top,
-    unhandled_input=update_state,
-    screen=urwid.curses_display.Screen(),
-)
-wrapper = Wrapper(state, label, loop)
-wrapper.start()
-loop.run()
