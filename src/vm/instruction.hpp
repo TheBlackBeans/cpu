@@ -138,8 +138,8 @@ constexpr InstructionType to_instructiontype(int it) {
 }
 
 using Register = std::uint16_t;
-using SReg = std::uint16_t;
-using UReg = std::int16_t;
+using SReg = std::int16_t;
+using UReg = std::uint16_t;
 constexpr const std::size_t register_size = sizeof(Register) * 8;
 static_assert(sizeof(Register) == sizeof(SReg), "Signed register and register must have the same data size");
 static_assert(sizeof(Register) == sizeof(UReg), "Unsigned register and register must have the same data size");
