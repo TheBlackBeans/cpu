@@ -39,7 +39,7 @@
 \title{Rapport}
 \author{%
   Jean \textsc{Caspar},
-  Loïc \textsc{Chevalier},\\
+  LoÃ¯c \textsc{Chevalier},\\
   Vladimir \textsc{Ivanov},
   Adrien \textsc{Mathieu}
 }
@@ -224,6 +224,22 @@ a multiple of 100 years (excluding the current year) and the number of
 100-years until a multiple of 400 years are all stored in registers
 \verb+r11+ through \verb+r15+ (not in that order).
 
+\section{Porting the CPU to an FPGA.}
+
+We ported the CPU to the Arty S7 FPGA. It runs at 12MHz and the clock, when running at maximum frequency, counts one month in about one second.
+
+We have 6 output displays, on which the date and time are displayed in either HH/MM/SS, YY/MM/DD, or YYYY/MM format. We have three buttons to select between those formats, a reset button, and a slideswitch that disables waiting for one second between updates, thus making the clock run really fast. We do not read any input and when reset, the clock starts at an arbitrary hardcoded date.
+
+Remembering the CPU's outputs, converting binary to BCD and then to 7 segment display segment activations, and selecting whether to display HH/MM/SS, YY/MM/DD, or YYYY/MM, is done with the SystemVerilog code in \verb|cpu_FPGA.sv|.
+
+Our main problem was I/O. The FPGA does only have enough output pins for six 7 segment displays, and we did not find an easy way to make it interface with a computer while running.
+Our first attempt was to solder a deserializer, but it was unsuccessful.
+We then switched to the idea of having the user select which digits are displayed.
+We were starting with the assumption that the interface of any deserializer or display we could buy would be too complicated to realistically make it work with the FPGA.
+
+Another difficulty was the Vivado IDE's two minute compile time and the FPGA's lack of an easy to use logging interface, making debugging extremely hard.
+
+A few insignificant parts of the SystemVerilog code had to be modified in order for it to become synthetisable.
 
 \begin{figure}[b]
   \label{fig:instrs}
