@@ -12,7 +12,7 @@ all: build doc
 build: out/cpu out/vm out/vm-clock out/asj out/clock out/clock-nostop
 .PHONY: build
 
-doc: out/instructionset.pdf
+doc: out/instructionset.pdf out/slides.pdf
 .PHONY: doc
 
 check: check/cpu check/asj
