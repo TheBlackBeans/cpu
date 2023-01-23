@@ -14,10 +14,10 @@ module Comparator#(parameter
 	always @* begin
 		// instr = nul Negate Unsigned Less than
 		case (instr[1:0])
-		2'b00: tmpres =   $signed(lhs) ==   $signed(rhs);
-		2'b01: tmpres =   $signed(lhs) <    $signed(rhs);
-		2'b10: tmpres = $unsigned(lhs) == $unsigned(rhs);
-		2'b11: tmpres = $unsigned(lhs) <  $unsigned(rhs);
+		2'b00: tmpres = $unsigned(lhs) == $unsigned(rhs);
+		2'b01: tmpres = $unsigned(lhs) <  $unsigned(rhs);
+		2'b10: tmpres =   $signed(lhs) ==   $signed(rhs);
+		2'b11: tmpres =   $signed(lhs) <    $signed(rhs);
 		endcase // case (instr)
 		result = {{data_size-1{1'b0}}, instr[2] ^ tmpres};
 		// $display("[ COMP  ] Update: op %3b with %016b %016b --> %b->%b", instr, lhs, rhs, tmpres, result);
