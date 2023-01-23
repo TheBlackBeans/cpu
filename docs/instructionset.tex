@@ -8,6 +8,7 @@
 \usepackage{tikz, environ}
 \usepackage{pgffor, fp}
 \usepackage{hyperref}
+\usepackage[normalem]{ulem}
 
 %%%%%%%%%
 % SETUP %
@@ -35,7 +36,7 @@
 % DOCUMENT %
 %%%%%%%%%%%%
 
-\title{Instruction set reference}
+\title{Rapport}
 \author{%
   Jean \textsc{Caspar},
   Loïc \textsc{Chevalier},
@@ -46,31 +47,44 @@
 
 \begin{document}
 \maketitle{}
-\section*{Hardware requirements}
-This instruction set requires 16 accessible registers, \(r_0,\ldots,r_{15}\), as
-well as an instruction pointer \(ip\) and a RAM.\par
-The first register \(r_0\) can be used the destination of an operation, in which
-case the result of the aforementioned operation is ignored. It can also be used
-as a source register, in which can it acts as the constant \(0\).\par
-All the other registers are general purpose 16 bit registers, which can be
-accessed both for writing and for reading, even in a single cycle.
-The data read is the one stored in the register \textit{before} the write
-operation. Initially, every register must be set to zero, as should the
-RAM and the instruction pointer.\par
-The size of the RAM is left unspecified, and the instruction pointer must have
-the same size of the general registers.
+\section*{Hardware specification}
+The CPU provides 16 accessible registers, \(r_0,\ldots,r_{15}\), as
+well as an instruction pointer \(ip\), a RAM and IO ports. A machine
+word is 16 bits. If an operation requires writing and reading at the
+same place, the value read is the one \emph{before} the write takes
+place. Every storage unit is initially initialized with \(0\).\par
+In particular, the CPU does \emph{not} contain any flag that is
+implicitly set during any operation.
+\subsection*{Registers}
+Among the 16 registers, fifteen are general purpose registers, and
+one is a zero register. More specifically, the first register \(r_0\)
+can be used the destination of an operation, in which case the result
+of the aforementioned operation is ignored. It can also be used as a
+source register, in which can it acts as the constant \(0\).\par
+All the other registers are general purpose 16 bit registers, which
+can be accessed both for writing and for reading, even in a single
+cycle.
+\subsection*{RAM}
+The size of the RAM is left unspecified. Reading and writing from and
+to the RAM is done a single machine-word at a time.
+\subsection*{Instruction Pointer}
+The instruction pointer has the same size as a general purpose
+register. It is initialized with the value \(0\). It cannot be
+accessed directly. It can be written to, but cannot be read from.
 
 \section*{Instructions}
 An instruction is 32 bits wide. The first eight bits encode the
 instruction code, the 24 remaining bits contain the arguments. See
 the figure \nameref{fig:instrs} and the table \nameref{tab:instrs}.
 \subsection*{Instruction code}
-The first bit of an instruction code corresponds to the arity of the instruction.
-A $0$ means an arity of one, a $1$ means an arity of two. Every instruction
-additionally receives a \emph{destination register} $r_d$, in which the result of
-the operation must be stored, unless told otherwise.\par
-The next five bits encode to the operation. The first two bits indicate the
-operation family:
+The first bit of an instruction code corresponds to the arity of the
+instruction.
+A $0$ means an arity of one, a $1$ means an arity of two. Every
+instruction additionally receives a \emph{destination register} $r_d$,
+in which the result of the operation must be stored, unless told
+otherwise.\par
+The next five bits encode to the operation. The first two bits indicate
+the operation family:
 \begin{itemize}
 \item $00$: Arithmetic and logic operation.
 \item $01$: Jump operation.
@@ -100,6 +114,87 @@ The comparison operation's last three bits encode the actual comparison being ma
 The first bit indicates the negation of the result, the second indicates whether
 the arguments are considered as signed, the last number indicates whether we
 apply less than.
+
+\section*{Assembly}
+The assembly's syntax is very close to common other common assembly
+languages. Destination registers (ie. registers that are written to)
+are specified in a binding form: \(r_d = \textrm{op } a_1, a_2\).\par
+Comments are introduced with semicolons. Each line holds a single
+operation, a label, or nothing at all.
+
+\subsection*{Labels}
+Two kind of labels are supported: named labels, and relative labels.\par
+Named labels should have unique names (ie. names that are not used
+by any other labels). Any operation can jump to a named label simply
+by giving its name instead of an explicit address.\par
+Relative labels are labels whose name is a natural number. They need
+not to be unique, and can be referenced by giving their number
+followed by a single character indicating if the \emph{next} such label
+or if the \emph{previous} such label is considered. For instance,
+\(1f\) indicates the next label called \(1\), whereas \(12b\) indicates
+the previous label called \(12\).
+
+\subsection*{Immediates}
+At most one immediate can be present per instruction. An immediate
+must fit into a signed 16 bit number. Any arithmetic operation that
+fits into 16 bit arithmetic will be resolved at assembling-time
+(ie. \(2^{16}-2^{16}\) will fail, even though the result could fit in
+a 16-bit signed integer). Subtracting two labels is considered a valid
+arithmetic operation, and results in the number of instructions
+that will be issued between the two labels.
+
+\subsection*{Syntactic sugar}
+The assembler provided with the CPU (\verb|asj|), which complies with
+the given specification, has some syntactic sugar.\par
+Binding move-like operations are supported (ie. \(r5 = 15\)), by
+transforming them into additions with \(r0\) (ie. the example becomes
+\(r5 = add 15, r0\)).\par
+\(\mathrm{RAM}\) can be used as a C-like array: it can be accessed
+in an expression (\(r5 = \mathrm{RAM}[r4]\)) and written to similarly
+(\(\mathrm{RAM}[r4] = r5\)). This will be converted to the
+corresponding \verb|load|/\verb|store| operations.\par
+Similarly, \(\textrm{port }x\) can be used as the \(x\)-th port of
+the IO ports provided. This will be translated to the corresponding
+\verb|send| / \verb|recv| operations. Note that it will not be the
+same ports if used in a write manner or in a read manner, since they
+physically correspond to different pins.
+
+\section*{Simulation}
+The CPU targets FPGAs, but can be simulated both in real-time and as
+fast as possible. For the latter, a version of the clock program
+which never waits is also provided. To this end, the CPU source code
+is divided into a synthetisable part, and a standalone simulatable
+part. The simulatable part adds features that should otherwise be
+provided by the hardware, such as a clock, the ROM and IO operations.\par
+Due to Verilog lacking some simulation features, an ``extension'' of
+the language has been \sout{horrendously glued together} elegantly
+added to the core features of Verilog. These features can be used from
+within Verilog by printing a command, and reading a character from
+stdin. A simulation wrapper is then responsible from filtering the
+stdout of the simulation process, acknowledging and processing the
+external commands, and feeding back a character when the whole
+operation is over.\par
+The simulation wrapper also takes care of simulating buttons and
+displays in an interactive, real-time way.
+\subsection*{Real-time wait}
+The extension to Verilog includes providing a real-time wait
+instruction, similarly to how a hardware clock would provide real-time
+heartbeats.
+
+\subsection*{Interactive IO}
+The extension to Verilog also includes an interface for communicating
+with the CPU that does not rely on the user manually setting and reading each
+pin's value, but instead simulates buttons as they would behave on an
+FPGA, and shows the values that would normally be displayed on seven
+segment displays.
+
+\section*{Virtualization}
+A virtual machine targeting the defined architecture is also provided.
+It can be used to run programs assembled with the given assembler
+without running them on the corresponding CPU.
+
+\section*{Clock program}
+
 
 \begin{figure}[b]
   \label{fig:instrs}
