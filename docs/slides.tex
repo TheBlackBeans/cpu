@@ -1,12 +1,19 @@
 \documentclass{beamer}
-
+\usepackage{cmap}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{graphicx}
 \usepackage[french]{babel}
-\usepackage[babel=true]{microtype}
-\usepackage[bookmarksopen=true]{hyperref}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{multirow}
 \usepackage{booktabs, bookmark}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{stmaryrd}
 
 \usetheme{Dresden}
 
@@ -38,12 +45,14 @@
 
 \begin{document}
 
-\frame{\titlepage}
-
 \begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}[fragile]
     \frametitle{Assembleur}
     \begin{itemize}
-        \item Nous avons développé un jeu d'instructions et un assembleur, en Rust
+        \item Nous avons développé un jeu d'instructions et un assembleur en Rust
         \item Le registre $r_0$ est toujours à $0$, 15 autres registres
         \item Les instructions prennent une à deux opérandes, registres ou immédiats, et un
               registre de sortie $r_d$
@@ -53,7 +62,6 @@
               $o$ désigne un saut relatif, $z$ saute si l'opérande est nulle, $nz$ si elle est non nulle
         \item RAM : \verb|load| et \verb|store|
         \item IO : \verb|recv| et \verb|send|
-         
     \end{itemize}
 \end{frame}
 
@@ -70,11 +78,36 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Simulation et VM}
+    \frametitle{VM}
     \begin{itemize}
-        \item VM qui simule le CPU
-        \item Peut prendre en paramètre la fréquence à laquelle tourner
-        \item Peut calculer le chemin critique d'un programme (ou au moins une estimation)
+        \item VM qui simule les opérations du CPU
+        \item Peut prendre en paramètre la fréquence à laquelle simuler, l'état des registres (y compris l'addresse de l'instruction courante)
+        \item Peut afficher l'état interne du CPU virtuel à chaque cycle
+        \item Gestion des I/O séparée du c\oe{}ur de la VM : programmes de tests sans entrée/sortie contre programme de l'horloge avec des entrées/sorties spécifiques
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Simulateur}
+    \begin{itemize}
+        \item Simule le CPU physique
+        \item Par défaut, exécute aussi vite que possible ; wrapper Python autour ainsi qu'une légère modification du code du CPU non synthétisable pour forcer l'horloge à être à la fréquence attendue
+        \item Dernière étape avant le téléchargement sur le FPGA
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Programme}
+    \begin{itemize}
+        \item Horloge : de secondes à année
+        \item Deux phases :
+            \begin{enumerate}
+            \item initialisation, déplacement entre des boucles selon les entrées de l'utilisateur
+            \item boucle principale, deux registres utilisés pour retenir le nombre de cycles écoulés ($12 \cdot 10^6 = 183 \cdot 2^16 + 6912$)
+            \end{enumerate}
+
+        \item Gestion des jours : utilisation d'un registre pour ne pas recalculer le dernier jour du mois tous les jours (seulement tous les mois)
+        \item Gestion des années bissextiles : utilisation de 3 registres pour repérer quelle année modulo 400 on est sans utiliser de division ou de modulo, utilisation d'un registre pour mémoriser cette information (en fait \verb+r11+ retient le nombre de jour au mois de février)
     \end{itemize}
 \end{frame}
 
