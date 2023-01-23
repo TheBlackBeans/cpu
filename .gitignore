@@ -4,3 +4,4 @@ target/
 /**/*.cgr
 
 __pycache__/
+_build/
