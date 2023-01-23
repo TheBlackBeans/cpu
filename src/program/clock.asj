@@ -281,7 +281,9 @@ read_secs_11:
 	;jnz read_secs_11, r8
 	
 	r1 = 0
+	r9 = 0
 	jmp start ; Finished initialization
+	; Note: we will assume that overflows on the number of cycles will only ever happen on the cycles wait loop.
 	
 0:
 not_bis:
@@ -290,12 +292,24 @@ not_bis:
 0:
 start:
 	r1 = add r1, 0f - 0b
-	r8 = cmpae r1, 1000           ; N. cycles per second present here
+	r8 = cmpbl r1, 0f - 0b
+	r9 = add r9, r8
+	; 12000000 Hz
+	; 12000000 == 0b101101110001101100000000
+	;              r999999991111111111111111
+	; 0b10110111 == 183
+	; 0b0001101100000000 == 6912
+	r8 = cmpae r9, 183
 	jz start, r8
+0:
+	r1 = add r1, 0f - 0b ; Notice that r1 < 6912
+	r8 = cmpae r1, 6912           ; N. cycles per second present here
+	jz 0b, r8
 	
 0:
-	; We have passed 1000 cycle
-	r1 = sub r1, 1000 - (0f - 0b) ; N. cycles per second present here
+	; We have passed 12000000 cycle
+	r1 = sub r1, 6912 - (0f - 0b) ; N. cycles per second present here
+	r9 = sub r9, 183
 	r2 = add r2, 1
 	port 0 = r2
 	r8 = cmpae r2, 60
