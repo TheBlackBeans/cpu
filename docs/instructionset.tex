@@ -39,7 +39,7 @@
 \title{Rapport}
 \author{%
   Jean \textsc{Caspar},
-  Loïc \textsc{Chevalier},
+  Loïc \textsc{Chevalier},\\
   Vladimir \textsc{Ivanov},
   Adrien \textsc{Mathieu}
 }
@@ -191,9 +191,38 @@ segment displays.
 \section*{Virtualization}
 A virtual machine targeting the defined architecture is also provided.
 It can be used to run programs assembled with the given assembler
-without running them on the corresponding CPU.
+without running them on the CPU, which may be useful for debugging purposes
+as it allows to display the internal state of the CPU; therefore, if a
+program is not working as intended, we can check if it does what it is
+supposed to do using the VM, so we know what to fix (the program or the
+CPU).\par
+The core VM is also extendable to support multiple output (I/O) formats.
+The default VM does not update any input nor any output, but a \verb+clock+
+version of it displays on the terminal the time as required by the program
+(the seconds on port 0, ..., the year on port 5, and two buttons are mapped
+to ports 0 and 1).
 
 \section*{Clock program}
+
+The clock program works in two distinct phases: first, the program waits for
+the user to input the current time, using busy loops to wait for button
+presses and releases. Once the current time is set and confirmed, the program
+goes into its second mode: a 32-bits wide "register" (\verb+r9:r1+) is
+incremented by the number of clock cycles it takes to execute a block of
+code, before executing the block of code.\par
+The first loop is a simple incrementer of the two-registers counters. Once
+they reach a certain value ($\verb+r9:r1+ \geq 12 \cdot 10^6$ as the FPGA has
+a clock that runs at this speed, and is the clock used), the number of
+seconds is incremented by one, then sent, then it is checked against its
+maximum value of $60$. If it is not, the program jumps back to the first
+loop. If it is, it is reset, sent again, then the minutes are
+incremented...
+To speed up the rolling process, the number of days in the current month, the
+number of days in February of the current year, the number of years until a
+multiple of 4 years (excluding the current year), the number of 4-years until
+a multiple of 100 years (excluding the current year) and the number of
+100-years until a multiple of 400 years are all stored in registers
+\verb+r11+ through \verb+r15+ (not in that order).
 
 
 \begin{figure}[b]
