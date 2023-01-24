@@ -20,7 +20,7 @@ module cpu(
 	);
 	
 	wire rstn;
-	logic [31:0] rom[2**8];
+	logic [31:0] rom[1<<9];
 	
 	logic [15:0] ip;
 	
@@ -30,7 +30,7 @@ module cpu(
 	wire [3:0] out_port;
 	wire [15:0] out_data;
 	
-	Driver#(.rom_size(2**8)) driver(.rom, .clk, .rstn, .ip, .write_out, .out_port, .out_data, .in_data(buttons));
+	Driver#(.rom_size(1<<9)) driver(.rom, .clk, .rstn, .ip, .write_out, .out_port, .out_data, .in_data(buttons));
 	
 	logic [7:0] seconds;
 	logic [7:0] minutes;

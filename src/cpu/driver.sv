@@ -127,4 +127,7 @@ module Driver#(parameter rom_size = 1<<8)(input logic[31:0] rom[rom_size], input
 		.optype
 	);
 	
+	/* always @(negedge clk) begin
+		$display("[ MAIN  ] Clock went to 0, IP=%b -> %b  ALU %b  COMP %b MISC %b JMP %b/%b  regdataw %16b jaddr %16b", ip, rom[ip], alu_out, comp_out, misc_cs, maybe_jmp, ip_jmp, rdataw, jaddr);
+	end */
 endmodule // Driver

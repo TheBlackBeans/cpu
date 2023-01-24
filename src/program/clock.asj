@@ -305,7 +305,7 @@ start:
 	jz start, r8
 0:
 	r8 = port 2
-	jnz start, r8
+	jnz start_nostop, r8
 	r1 = add r1, 0f - 0b ; Notice that r1 < 6912
 	r8 = cmpae r1, 6912           ; N. cycles per second present here
 	jz 0b, r8

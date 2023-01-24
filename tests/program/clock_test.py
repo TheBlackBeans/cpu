@@ -22,9 +22,9 @@ bit1 = Bit()
 def extend_sint(s, l):
     return (("0" * (l - len(s))) + s) if len(s) < l else s
 
+send0 = "0\n".encode()
+send1 = "1\n".encode()
 def transform_bits_seq(seq):
-    send0 = "0\n".encode()
-    send1 = "1\n".encode()
     port = yield None
     
     def send_data(data):
@@ -151,6 +151,13 @@ with Popen(
             if setup_done:
                 raise Exception("Setup is already done, receiving 1")
             f.stdin.write(tbs.send(1))
+            f.stdin.flush()
+            try:
+                tbs.send(None)
+            except StopIteration:
+                setup_done = True
+        elif line == "RECV 2":
+            f.stdin.write(send1)
             f.stdin.flush()
             try:
                 tbs.send(None)

@@ -2,7 +2,7 @@
 `timescale 10ms/100ns // #1 = 10±0.1μs
 
 module Main;
-	parameter integer rom_size = 2**8;
+	parameter integer rom_size = 1<<9;
 	parameter integer STDIN = 32'h8000_0000;
 	
 	logic clk;
@@ -39,14 +39,12 @@ module Main;
 		
 		clk = ~clk;
 		if (clk) begin
-			#0 if (ip <= 256)
+			#0 if (ip <= 318)
 				; // $display("[ MAIN  ] %3d | %b", ip, rom[ip]);
 			else begin
 				$display("IP is too big: %016b = %d, exiting", ip, ip);
 				$finish;
 			end
-		end else begin
-			// $display("[ MAIN  ] Clock went to 0, ALU %b  COMP %b MISC %b JMP %b/%b  regdataw %16b", alu_out, comp_out, misc_cs, maybe_jmp, ip_jmp, rdataw);
 		end
 	end
 endmodule
