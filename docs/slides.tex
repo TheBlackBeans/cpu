@@ -53,9 +53,9 @@ A. \textsc{Mathieu}%
 \end{frame}
 
 \begin{frame}[fragile]{Jeu d'instructions}
-  L'instruction set de notre CPU est inspiré de RISC-V. Chaque
-  instruction peut prendre un ou deux arguments, et éventuellement
-  spécifier un registre où stocker le résultat.\par
+  L'instruction set de notre CPU est \emph{très vaguement} inspiré de
+  RISC-V. Chaque instruction peut prendre un ou deux arguments, et
+  éventuellement spécifier un registre où stocker le résultat.\par
   \pause
   16 registres 16-bit sont disponibles. Le premier, \(r_0\), vaut
   toujours \(0\).\par
@@ -130,21 +130,6 @@ A. \textsc{Mathieu}%
   De même, la RAM et les ports d'IO peuvent être utilisés comme un
   tableau en C, et les expressions arithmétiques sont résolues au
   moment de la compilation en un immédiat unique.
-\end{frame}
-
-\begin{frame}{Verilog}
-  Le programme Verilog est séparé en plusieurs modules.
-  \begin{itemize}
-  \item ALU et comparateur.
-    \pause
-  \item Un pointeur d'instruction, et un module pour gérer les sauts.
-    \pause
-  \item Des registres, de la RAM et un sélecteur d'instruction.
-    \pause
-  \item Des bus et un module de gestion de l'IO.
-    \pause
-  \item Un driver qui instancie les autres modules.
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{VM}
@@ -245,7 +230,8 @@ A. \textsc{Mathieu}%
   \end{center}
 \end{frame}
 \begin{frame}{Conclusion}
-  Notre CPU tourne, avec le programme horloge, à \(12\mathrm{MHz}\).
+  Notre CPU tourne, avec le programme horloge, à \(12\mathrm{MHz}\).\par
+  Cela correspond à peu près à un mois par seconde.
 \end{frame}
 
 \end{document}
