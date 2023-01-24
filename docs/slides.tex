@@ -133,82 +133,119 @@ A. \textsc{Mathieu}%
 \end{frame}
 
 \begin{frame}{Verilog}
-    Le programme Verilog est séparé en plusieurs modules.
-    \begin{itemize}
-        \item ALU et comparateur
-        \item Un pointeur d'instruction, et un module pour gérer les sauts
-        \item Des registres, de la RAM et un sélecteur d'instruction
-        \item Des bus et un module de gestion de l'IO
-        \item Un driver qui instancie les autres modules
-    \end{itemize}
+  Le programme Verilog est séparé en plusieurs modules.
+  \begin{itemize}
+  \item ALU et comparateur.
+    \pause
+  \item Un pointeur d'instruction, et un module pour gérer les sauts.
+    \pause
+  \item Des registres, de la RAM et un sélecteur d'instruction.
+    \pause
+  \item Des bus et un module de gestion de l'IO.
+    \pause
+  \item Un driver qui instancie les autres modules.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{VM}
-    \begin{itemize}
-        \item VM qui simule les opérations du CPU
-        \item Peut prendre en paramètre la fréquence à laquelle simuler, l'état des registres (y compris l'addresse de l'instruction courante)
-        \item Peut afficher l'état interne du CPU virtuel à chaque cycle
-        \item Gestion des I/O séparée du c\oe{}ur de la VM : programmes de tests sans entrée/sortie contre programme de l'horloge avec des entrées/sorties spécifiques
-    \end{itemize}
+  \begin{itemize}
+  \item VM qui simule les opérations du CPU.
+    \pause
+  \item Peut prendre en paramètre la fréquence à laquelle simuler,
+    l'état des registres (y compris l'adresse de l'instruction
+    courante).
+    \pause
+  \item Peut afficher l'état interne du CPU virtuel à chaque cycle
+    \pause
+  \item Gestion des I/O séparée du c\oe{}ur de la VM: programmes de
+    tests sans entrée/sortie contre programme de l'horloge avec des
+    entrées/sorties spécifiques.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Simulateur}
-    \begin{itemize}
-        \item Simule le CPU physique
-        \item Par défaut, exécute aussi vite que possible ; wrapper Python autour ainsi qu'une légère modification du code du CPU non synthétisable pour forcer l'horloge à être à la fréquence attendue
-        \item Dernière étape avant le téléchargement sur le FPGA
-    \end{itemize}
+  \begin{itemize}
+  \item Simule le CPU physique.
+    \pause
+  \item Par défaut, exécute aussi vite que possible; wrapper Python
+    autour ainsi qu'une légère modification du code du CPU non
+    synthétisable pour forcer l'horloge à être à la fréquence attendue.
+    \pause
+  \item Dernière étape avant le téléchargement sur le FPGA.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Programme}
-    \begin{itemize}
-        \item Horloge : de secondes à année
-        \item Deux phases :
-            \begin{enumerate}
-            \item initialisation, déplacement entre des boucles selon les entrées de l'utilisateur
-            \item boucle principale, deux registres utilisés pour retenir le nombre de cycles écoulés ($12 \cdot 10^6 = 183 \cdot 2^16 + 6912$)
-            \end{enumerate}
+  \begin{itemize}
+  \item Horloge: de secondes à année
+    \pause
+  \item Deux phases:
+    \begin{enumerate}
+    \item initialisation, déplacement entre des boucles selon les
+      entrées de l'utilisateur
+    \item boucle principale, deux registres utilisés pour retenir le
+      nombre de cycles écoulés ($12 \cdot 10^6 = 183 \cdot 2^{16} + 6912$).
+      \pause
+    \end{enumerate}
 
-        \item Gestion des jours : utilisation d'un registre pour ne pas recalculer le dernier jour du mois tous les jours (seulement tous les mois)
-        \item Gestion des années bissextiles : utilisation de 3 registres pour repérer quelle année modulo 400 on est sans utiliser de division ou de modulo, utilisation d'un registre pour mémoriser cette information (en fait \verb+r11+ retient le nombre de jour au mois de février)
-    \end{itemize}
+  \item Gestion des jours: utilisation d'un registre pour ne pas
+    recalculer le dernier jour du mois tous les jours (seulement tous
+    les mois)
+    \pause
+  \item Gestion des années bissextiles: utilisation de 3 registres
+    pour repérer quelle année modulo 400 on est sans utiliser de
+    division ou de modulo, utilisation d'un registre pour mémoriser
+    cette information (en fait \verb+r11+ retient le nombre de jour au
+    mois de février).
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Verilog}
-    Le programme Verilog est séparé en plusieurs modules.
-    \begin{itemize}
-        \item ALU et comparateur
-        \item Un pointeur d'instruction, et un module pour gérer les sauts
-        \item Des registres, de la RAM et un sélecteur d'instruction
-        \item Des bus et un module de gestion de l'IO
-        \item Un driver qui instancie les autres modules
-    \end{itemize}
+  Le programme Verilog est séparé en plusieurs modules.
+  \pause
+  \begin{itemize}
+  \item ALU et comparateur
+    \pause
+  \item Un pointeur d'instruction, et un module pour gérer les sauts
+    \pause
+  \item Des registres, de la RAM et un sélecteur d'instruction
+    \pause
+  \item Des bus et un module de gestion de l'IO
+    \pause
+  \item Un driver qui instancie les autres modules
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{FPGA}
-    Précédemment nous avions tenté d'utiliser 12 afficheurs 7 segments pour tout afficher en même temps.
-    Mais le FPGA n'a pas autant de sorties donc il aurait fallu utiliser des puces en plus pour servir
-    de registres et de décodeur.
-    \begin{center}
-        \includegraphics[scale=0.05]{pictures/Soudure global.jpg}
-    \end{center}
+  Précédemment nous avions tenté d'utiliser 12 afficheurs 7 segments
+  pour tout afficher en même temps. Mais le FPGA n'a pas autant de
+  sorties donc il aurait fallu utiliser des puces en plus pour servir
+  de registres et de décodeur.
+  \begin{center}
+    \includegraphics[scale=0.05]{pictures/Soudure global.jpg}
+  \end{center}
 \end{frame}
 
-\begin{frame}
-    C'est un échec :
-    \begin{center}
-        \includegraphics[scale=0.07]{pictures/Soudure proche.jpg}
-    \end{center}
+\begin{frame}{Échec critique}
+  C'est un échec:
+  \begin{center}
+    \includegraphics[scale=0.07]{pictures/Soudure proche.jpg}
+  \end{center}
 \end{frame}
 
-\begin{frame}
-    Nous sommes mauvais en soudure, et il y avait trop de court-circuit, donc nous avons abandonné.
-    Finalement, nous avons utilisé une breadboard (pas besoin de soudures) et seulement 6 afficheurs,
-    on peut changer de mode d'affichage avec les boutons. Nous pouvons afficher HH/MM/SS, YY/MO/DD
-    ou YYYY/MO.
-    \begin{center}
-        \includegraphics[angle=90,scale=0.04]{pictures/FPGA final.jpg}
-    \end{center}
+\begin{frame}[fragile]
+  Nous sommes mauvais en soudure, et il y avait trop de court-circuits,
+  donc nous avons abandonné.\par
+  Finalement, nous avons utilisé une breadboard (pas besoin de
+  soudures) et seulement 6 afficheurs, on peut changer de mode
+  d'affichage avec les boutons. Nous pouvons afficher \verb|HH/MM/SS|,
+  \verb|YY/MO/DD| ou \verb|YYYY/MO|.
+  \begin{center}
+    \includegraphics[angle=90,scale=0.04]{pictures/FPGA final.jpg}
+  \end{center}
+\end{frame}
+\begin{frame}{Conclusion}
+  Notre CPU tourne, avec le programme horloge, à \(12\mathrm{MHz}\).
 \end{frame}
 
 \end{document}
