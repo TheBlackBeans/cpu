@@ -2,15 +2,18 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 # set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets seconds_ones_OBUF[0]]
 
 set_property -dict { PACKAGE_PIN F14    IOSTANDARD LVCMOS33 } [get_ports { clk }];
+# set_property -dict { PACKAGE_PIN H13    IOSTANDARD LVCMOS33 } [get_ports { clk }];
 
 set_property PACKAGE_PIN G15 [get_ports reset]
 set_property IOSTANDARD LVCMOS33 [get_ports reset]
 
-set_property -dict { PACKAGE_PIN K16   IOSTANDARD LVCMOS33 } [get_ports { select_hhmmss_button }];
-set_property -dict { PACKAGE_PIN J16   IOSTANDARD LVCMOS33 } [get_ports { select_yymmdd_button }];
-set_property -dict { PACKAGE_PIN H13   IOSTANDARD LVCMOS33 } [get_ports { select_yyyymm_button }];
+set_property -dict { PACKAGE_PIN H18   IOSTANDARD LVCMOS33 } [get_ports { select_hhmmss }];
+set_property -dict { PACKAGE_PIN G18   IOSTANDARD LVCMOS33 } [get_ports { select_yymmdd }];
+set_property -dict { PACKAGE_PIN M5    IOSTANDARD LVCMOS33 } [get_ports { select_yyyymm }];
 
-set_property -dict { PACKAGE_PIN H14   IOSTANDARD LVCMOS33 } [get_ports turbo];
+set_property -dict { PACKAGE_PIN J16   IOSTANDARD LVCMOS33 } [get_ports { buttons[0] } ];
+set_property -dict { PACKAGE_PIN K16   IOSTANDARD LVCMOS33 } [get_ports { buttons[1] } ];
+set_property -dict { PACKAGE_PIN H14   IOSTANDARD LVCMOS33 } [get_ports { buttons[2] } ];
 
 set_property PACKAGE_PIN U15 [get_ports {display0[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {display0[0]}]
