@@ -6,6 +6,10 @@
 \usepackage{url, hyperref}
 \usepackage{graphicx}
 \usepackage{emoji}
+\usepackage{tikz}
+\usepackage{pgffor, fp}
+
+\usetikzlibrary{decorations.pathreplacing, calligraphy, arrows.meta}
 
 \usetheme{Dresden}
 
@@ -54,7 +58,45 @@ A. \textsc{Mathieu}%
   spécifier un registre où stocker le résultat.\par
   \pause
   16 registres 16-bit sont disponibles. Le premier, \(r_0\), vaut
-  toujours \(0\).
+  toujours \(0\).\par
+  \pause
+  % \vspace
+  \begin{tikzpicture}[
+    thick,
+    scale=.36,
+    brace/.style={
+      decorate,
+      decoration={
+        calligraphic brace,
+        raise=2pt,
+        amplitude=10pt,
+      },
+    },
+    ]
+    % \draw[brace] (0,2) -- (24,2);
+    % \draw[brace] (24,2) -- (32,2);
+
+    \foreach \n in {0,...,31}{
+      \FPeval{\next}{clip(\n+1)}
+      \FPeval{\lab}{clip(31-\n)}
+      \draw (\n,0) rectangle (\next,1);
+      \node[scale=.8] at (\n.5,1.5) {$\lab$};
+    }
+    \foreach \n in {0, 4, 16, 20, 24, 26, 31, 32}{
+      \draw[dotted] (\n,0) -- (\n,-1);
+    }
+    \node[scale=.8] at (28.5,-.5) {opération};
+    \node[scale=.8,rotate=90] at (31.5,-.9) {arité};
+    \node[scale=.8,rotate=90] at (25.5,-2) {\(a_1\) registre};
+    \node[scale=.8,rotate=90] at (24.5,-2) {\(a_2\) registre};
+    \node[scale=.8] at (22,-.5) {\(r_d\)};
+    \node[scale=.8] at (18,-.5) {\(r_1\)};
+    \node[scale=.8] at (2,-.5) {\(r_2\)};
+    \draw[brace, decoration={mirror}] (0,-1) -- (16,-1);
+    \draw[brace, decoration={mirror}] (4,-1.15) -- (20,-1.15);
+    \node[scale=.8] at (8,-2.6) {$i$};
+    \node[scale=.8] at (12,-2.75) {$i$};
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}[fragile]{Familles d'instructions}
@@ -129,6 +171,17 @@ A. \textsc{Mathieu}%
 
         \item Gestion des jours : utilisation d'un registre pour ne pas recalculer le dernier jour du mois tous les jours (seulement tous les mois)
         \item Gestion des années bissextiles : utilisation de 3 registres pour repérer quelle année modulo 400 on est sans utiliser de division ou de modulo, utilisation d'un registre pour mémoriser cette information (en fait \verb+r11+ retient le nombre de jour au mois de février)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Verilog}
+    Le programme Verilog est séparé en plusieurs modules.
+    \begin{itemize}
+        \item ALU et comparateur
+        \item Un pointeur d'instruction, et un module pour gérer les sauts
+        \item Des registres, de la RAM et un sélecteur d'instruction
+        \item Des bus et un module de gestion de l'IO
+        \item Un driver qui instancie les autres modules
     \end{itemize}
 \end{frame}
 
