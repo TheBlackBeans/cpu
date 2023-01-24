@@ -11,6 +11,7 @@ class State:
     def __init__(self):
         self.a = False
         self.z = False
+        self.e = False
 
 class Wrapper(Thread):
     def __init__(self, state, label, loop):
@@ -48,6 +49,9 @@ class Wrapper(Thread):
                 elif line == "RECV 1":
                     f.stdin.write((("1" if self._state.z else "0") + "\n").encode())
                     f.stdin.flush()
+                elif line == "RECV 2":
+                    f.stdin.write((("1" if self._state.e else "0") + "\n").encode())
+                    f.stdin.flush()
                 elif line.startswith("SEND "):
                     vals = line.split(' ')
                     self._time[int(vals[1])] = extend_sint(vals[2], 4 if vals[1] == "5" else 2)
@@ -67,10 +71,12 @@ def update_state(key):
         state.a = not state.a
     elif key in {'z', 'Z'}:
         state.z = not state.z
+    elif key in {'e', 'E'}:
+        state.e = not state.e
     elif key in {'q', 'Q'}:
         wrapper.stop = True
         raise urwid.ExitMainLoop()
-    boutons.set_text(("#" if state.a else " ") + "  " + ("#" if state.z else " "))
+    boutons.set_text(" ".join("#" if v else " " for v in (state.a, state.z, state.e)))
 
 pile = urwid.Pile([label, boutons])
 top = urwid.Filler(pile, valign='top')
