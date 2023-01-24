@@ -54,7 +54,7 @@ class Wrapper(Thread):
                     f.stdin.flush()
                 elif line.startswith("SEND "):
                     vals = line.split(' ')
-                    self._time[int(vals[1])] = extend_sint(vals[2], 4 if vals[1] == "5" else 2)
+                    self._time[int(vals[1])] = vals[2] # extend_sint(vals[2], 4 if vals[1] == "5" else 2)
                     self._label.set_text(f"{self._time[3]}/{self._time[4]}/{self._time[5]}  {self._time[2]}:{self._time[1]}:{self._time[0]}")
                     self._loop.draw_screen()
                 else:
