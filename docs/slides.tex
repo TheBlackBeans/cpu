@@ -3,19 +3,13 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 \usepackage{microtype}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsthm}
-\usepackage{multirow}
-\usepackage{booktabs, bookmark}
-\usepackage{url}
-\usepackage{hyperref}
+\usepackage{url, hyperref}
 \usepackage{graphicx}
-\usepackage{array}
-\usepackage{tikz}
-\usepackage{stmaryrd}
+\usepackage{emoji}
 
 \usetheme{Dresden}
+
+\setbeamertemplate{navigation symbols}{}
 
 \definecolor{purple}{rgb}{0.5, 0, 1}
 \setbeamercolor*{palette primary}{use=structure, fg=white, bg=purple}
@@ -35,7 +29,12 @@
 \setbeamercolor{frametitle right}{bg=gray!60!white}
 
 \title{CPU et horloge sur FPGA}
-\author{
+\author[%
+J. \textsc{Caspar},
+L. \textsc{Chevalier},
+V. \textsc{Ivanov},
+A. \textsc{Mathieu}%
+]{
   Jean \textsc{Caspar},
   Loïc \textsc{Chevalier},
   Vladimir \textsc{Ivanov},
@@ -45,28 +44,54 @@
 
 \begin{document}
 
-\begin{frame}
-    \titlepage
+\begin{frame}[noframenumbering]
+  \titlepage
 \end{frame}
 
-\begin{frame}[fragile]
-    \frametitle{Assembleur}
-    \begin{itemize}
-        \item Nous avons développé un jeu d'instructions et un assembleur en Rust
-        \item Le registre $r_0$ est toujours à $0$, 15 autres registres
-        \item Les instructions prennent une à deux opérandes, registres ou immédiats, et un
-              registre de sortie $r_d$
-        \item Opérations arithmétiques : $r_d = lhs \operatorname{op} rhs$
-        \item Comparaisons $r_d = 1$ si $lhs \operatorname{cc} rhs$, $r_d = 0$ sinon
-        \item Sauts : \verb|jmp|, \verb|jo|, \verb|jz|, \verb|jzo|, \verb|jnz|, \verb|jnzo|.
-              $o$ désigne un saut relatif, $z$ saute si l'opérande est nulle, $nz$ si elle est non nulle
-        \item RAM : \verb|load| et \verb|store|
-        \item IO : \verb|recv| et \verb|send|
-    \end{itemize}
+\begin{frame}[fragile]{Jeu d'instructions}
+  L'instruction set de notre CPU est inspiré de RISC-V. Chaque
+  instruction peut prendre un ou deux arguments, et éventuellement
+  spécifier un registre où stocker le résultat.\par
+  \pause
+  16 registres 16-bit sont disponibles. Le premier, \(r_0\), vaut
+  toujours \(0\).\par
+  \pause
 \end{frame}
 
-\begin{frame}
-    \frametitle{Verilog}
+\begin{frame}[fragile]{Familles d'instructions}
+  Les instructions disponibles se divisent en quatre familles\pause
+  \begin{itemize}
+  \item Les opérations arithmétiques et logiques. Celles-ci incluent
+    la division et le modulo, mais ne sont pas utilisées dans notre
+    programme.
+    \pause
+  \item Les opérations de comparaison. Elles se déclinent en opérations
+    signées et non-signées. Toutes les opérations ne sont pas
+    disponibles (manque de place).
+    \pause
+  \item Les opérations de saut. Les sauts relatifs sont supportés, mais
+    jamais utilisés.
+    \pause
+  \item Les opérations externes à la CPU. Cela correspond à la RAM et
+    aux ports d'IO.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Assembleur}
+  Un assembleur\footnote{\emoji{crab}} est fourni avec la CPU. En plus
+  de simplement assembler, il permet quelques facilités, qui ne sont
+  que du sucre syntaxique.\par
+  \pause
+  Par exemple, toutes les opérations de comparaison sont disponibles
+  dans l'assembly; elles sont ensuite exprimées en fonction de celles
+  disponibles.\par
+  \pause
+  De même, la RAM et les ports d'IO peuvent être utilisés comme un
+  tableau en C, et les expressions arithmétiques sont résolues au
+  moment de la compilation en un immédiat unique.
+\end{frame}
+
+\begin{frame}{Verilog}
     Le programme Verilog est séparé en plusieurs modules.
     \begin{itemize}
         \item ALU et comparateur
@@ -77,8 +102,7 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    \frametitle{VM}
+\begin{frame}{VM}
     \begin{itemize}
         \item VM qui simule les opérations du CPU
         \item Peut prendre en paramètre la fréquence à laquelle simuler, l'état des registres (y compris l'addresse de l'instruction courante)
@@ -87,8 +111,7 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Simulateur}
+\begin{frame}{Simulateur}
     \begin{itemize}
         \item Simule le CPU physique
         \item Par défaut, exécute aussi vite que possible ; wrapper Python autour ainsi qu'une légère modification du code du CPU non synthétisable pour forcer l'horloge à être à la fréquence attendue
@@ -96,8 +119,7 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-    \frametitle{Programme}
+\begin{frame}[fragile]{Programme}
     \begin{itemize}
         \item Horloge : de secondes à année
         \item Deux phases :
@@ -111,8 +133,7 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    \frametitle{FPGA}
+\begin{frame}{FPGA}
     Précédemment nous avions tenté d'utiliser 12 afficheurs 7 segments pour tout afficher en même temps.
     Mais le FPGA n'a pas autant de sorties donc il aurait fallu utiliser des puces en plus pour servir
     de registres et de décodeur.

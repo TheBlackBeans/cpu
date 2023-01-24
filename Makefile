@@ -1,7 +1,8 @@
 build:
 
 LATEX ?= lualatex
-LATEX_FLAGS ?= -interaction=batchmode -output-directory=out
+LATEX_INTERACTION_MODE ?= batchmode
+LATEX_FLAGS ?= -interaction=$(LATEX_INTERACTION_MODE) -output-directory=out
 COMPILER ?= iverilog
 COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 
