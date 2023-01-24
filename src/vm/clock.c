@@ -28,7 +28,7 @@ pthread_cond_t cond;
 bool done;
 bool port_received[6];
 uint16_t received_data[6];
-bool button_selected[2];
+bool button_selected[3];
 
 void print_val(int size, bool display, uint16_t data) {
 	if (display) {
@@ -39,7 +39,7 @@ void print_val(int size, bool display, uint16_t data) {
 }
 void update_output() {
 	pthread_mutex_lock(&iomut);
-	printf("\e[G%c  %c   ", button_selected[0] ? '#' : ' ', button_selected[1] ? '#' : ' ');
+	printf("\e[G%c  %c  %c   ", button_selected[0] ? '#' : ' ', button_selected[1] ? '#' : ' ', button_selected[2] ? '#' : ' ');
 	print_val(2, port_received[3], received_data[3]); printf("/");
 	print_val(2, port_received[4], received_data[4]); printf("/");
 	print_val(4, port_received[5], received_data[5]); printf("  ");
@@ -83,7 +83,7 @@ void *input_thread(void *unused) {
 	pthread_cond_signal(&cond);
 	
 	//
-	printf("a  z   Press q to quit\n");
+	printf("a  z  e   Press q to quit\n");
 	
 	char c;
 	update_output();
@@ -103,6 +103,11 @@ void *input_thread(void *unused) {
 			} else if (c == 'z') {
 				pthread_mutex_lock(&iomut);
 				button_selected[1] = !button_selected[1];
+				pthread_mutex_unlock(&iomut);
+				update_output();
+			} else if (c == 'e') {
+				pthread_mutex_lock(&iomut);
+				button_selected[2] = !button_selected[2];
 				pthread_mutex_unlock(&iomut);
 				update_output();
 			} else if (c == 'q') {
