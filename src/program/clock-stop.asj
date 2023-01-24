@@ -291,8 +291,6 @@ not_bis:
 	r11 = 28
 0:
 start:
-	r8 = port 2
-	jnz start, r8
 	r1 = add r1, 0f - 0b
 	r8 = cmpbl r1, 0f - 0b
 	r9 = add r9, r8
@@ -304,8 +302,6 @@ start:
 	r8 = cmpae r9, 183
 	jz start, r8
 0:
-	r8 = port 2
-	jnz start, r8
 	r1 = add r1, 0f - 0b ; Notice that r1 < 6912
 	r8 = cmpae r1, 6912           ; N. cycles per second present here
 	jz 0b, r8
@@ -407,79 +403,4 @@ bis:
 	r1 = add r1, 0f - 0b
 	r11 = 29
 	jmp start
-0: ; End of -stop file
-
-not_bis_nostop:
-	r11 = 28
-start_nostop:
-	r8 = port 2
-	jz start, r8
-	r2 = add r2, 1
-	port 0 = r2
-	r8 = cmpae r2, 60
-	jz start_nostop, r8
-	
-	; We have passed 60 second
-	r2 = sub r2, 60
-	port 0 = r2
-	r3 = add r3, 1
-	port 1 = r3
-	r8 = cmpae r3, 60
-	jz start_nostop, r8
-	
-	; We have passed 60 minutes
-	r3 = sub r3, 60
-	port 1 = r3
-	r4 = add r4, 1
-	port 2 = r4
-	r8 = cmpae r4, 24
-	jz start_nostop, r8
-	
-	; We have passed 24 hours
-	r4 = sub r4, 24
-	port 2 = r4
-	r5 = add r5, 1
-	port 3 = r5
-	r8 = cmpab r5, r15
-	jz start_nostop, r8
-	
-	; We have passed <r15> days
-	r5 = sub r5, r15
-	port 3 = r5
-	r6 = add r6, 1
-	port 4 = r6
-	r8 = cmpeq r6, 2 ; Jan -> Feb
-	jnz 2f, r8
-	r8 = cmpab r6, 12 ; Dec -> Jan
-	jnz 1f, r8
-	r8 = cmpab r6, 8 ; Jul -> Aug, Aug -> Sep, Sep -> Oct, Oct -> Nov, Nov -> Dec
-	r8 = sub r6, r8
-	r8 = and r8, 1
-	r15 = add 30, r8
-	jmp start_nostop
-	; It seems doing r15 = 31 + 30 - r15 may be the most optimal in term of number of operations though
-2:
-	; Jan -> Feb
-	r15 = r11
-	jmp start_nostop
-1:
-	; We have passed 12 months
-	r6 = sub r6, 12
-	port 4 = r6
-	r7 = add r7, 1
-	port 5 = r7
-	r15 = 31
-compute_r14:
-	; Now compute the number of days in February
-	r14 = sub r14, 1
-	jnz not_bis, r14
-	r14 = 4
-	r13 = sub r13, 1
-	jnz bis, r13
-	r13 = 25
-	r12 = sub r12, 1
-	jnz not_bis, r12
-	r12 = 4
-bis:
-	r11 = 29
-	jmp start_nostop
+0: ; End of file

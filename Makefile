@@ -9,7 +9,7 @@ COMPILER_FLAGS ?= -g2012 -gsupported-assertions
 all: build doc
 .PHONY: all
 
-build: out/cpu out/vm out/vm-clock out/asj out/clock out/clock-nostop
+build: src/fpga/cpu_FPGA.sv out/cpu out/vm out/vm-clock out/asj out/clock out/clock-stop out/clock-nostop
 .PHONY: build
 
 doc: out/instructionset.pdf out/slides.pdf
@@ -42,6 +42,10 @@ out/%.pdf out/%.aux out/%.log &: docs/%.tex | out
 
 # CPU-relevant stuff
 CPU_SOURCES := $(wildcard src/cpu/*.sv)
+
+src/fpga/cpu_FPGA.sv: out/clock src/scripts/rewrite_fpga.py
+	@echo "Regenerating the FPGA's main CPU"
+	@python src/scripts/rewrite_fpga.py out/clock $@
 
 out/cpu: $(CPU_SOURCES) | out
 	@echo "Compiling the CPU"
@@ -118,6 +122,9 @@ test/vm-clock: check/vm-clock
 # Program
 out/clock: src/program/clock.asj out/asj
 	@echo "Compiling the clock program"
+	@out/asj $< -o $@
+out/clock-stop: src/program/clock-stop.asj out/asj
+	@echo "Compiling the clock-stop program"
 	@out/asj $< -o $@
 out/clock-nostop: src/program/clock-nostop.asj out/asj
 	@echo "Compiling the clock-nostop program"
