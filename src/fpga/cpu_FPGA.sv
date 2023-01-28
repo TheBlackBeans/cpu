@@ -16,7 +16,7 @@ module cpu(
 	);
 	
 	wire rstn;
-	logic [31:0] rom[2**8];
+	logic [31:0] rom[1<<9];
 	
 	logic [15:0] ip;
 	
@@ -26,7 +26,7 @@ module cpu(
 	wire [3:0] out_port;
 	wire [15:0] out_data;
 	
-	Driver#(.rom_size(2**8)) driver(.rom, .clk, .rstn, .ip, .write_out, .out_port, .out_data, .in_data(buttons));
+	Driver#(.rom_size(1<<9)) driver(.rom, .clk, .rstn, .ip, .write_out, .out_port, .out_data, .in_data(buttons));
 	
 	logic [7:0] seconds;
 	logic [7:0] minutes;
@@ -298,12 +298,12 @@ module cpu(
 		rom[186] = 'h00071141;
 		rom[187] = 'h00071873;
 		rom[188] = 'h800099c1;
-		rom[189] = 'h0000987b;
+		rom[189] = 'h00b7987b;
 		rom[190] = 'h800b8091;
 		rom[191] = 'h00002822;
 		rom[192] = 'h80108095;
 		rom[193] = 'h00051141;
-		rom[194] = 'h03e8187b;
+		rom[194] = 'h1b00187b;
 		rom[195] = 'h800bf091;
 		rom[196] = 'h1afa1143;
 		rom[197] = 'h00b79943;

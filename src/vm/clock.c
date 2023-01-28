@@ -168,6 +168,6 @@ bool io_send(uint16_t port, uint16_t data) {
 	port_received[port] = true;
 	pthread_mutex_unlock(&iomut);
 	
-	update_output();
+	if ((port >= 2) || !button_selected[2]) update_output();
 	return true;
 }
